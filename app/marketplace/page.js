@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useProductSearch } from '../hooks/useProducts';
+import { useState, useMemo } from 'react';
+import { getProducts } from '../data/products';
 import ProductCard from './../components/ProductCard';
 export default function MarketplacePage() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -9,23 +9,42 @@ export default function MarketplacePage() {
   const [priceRange, setPriceRange] = useState([0, 500]);
   const [sortBy, setSortBy] = useState('name');
 
-  const { products, loading, error, searchProducts } = useProductSearch();
+  const products = getProducts();
 
-  // Available categories
-  const categories = ['All', 'Vegetables', 'Grains', 'Dairy & Honey', 'Dairy & Eggs'];
+  // Get unique categories
+  const categories = ['All', ...new Set(products.map(product => product.category))];
 
-  // Search products when filters change
-  useEffect(() => {
-    const filters = {
-      search: searchTerm || undefined,
-      category: selectedCategory !== 'All' ? selectedCategory : undefined,
-      minPrice: priceRange[0] > 0 ? priceRange[0] : undefined,
-      maxPrice: priceRange[1] < 500 ? priceRange[1] : undefined,
-      sortBy: sortBy
-    };
-    
-    searchProducts(filters);
-  }, [searchTerm, selectedCategory, priceRange, sortBy, searchProducts]);
+  // Filter and sort products
+  const filteredProducts = useMemo(() => {
+    let filtered = products.filter(product => {
+      const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          product.farmer.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          product.location.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      const matchesCategory = selectedCategory === 'All' || product.category === selectedCategory;
+      
+      const matchesPrice = product.price >= priceRange[0] && product.price <= priceRange[1];
+
+      return matchesSearch && matchesCategory && matchesPrice;
+    });
+
+    // Sort products
+    filtered.sort((a, b) => {
+      switch (sortBy) {
+        case 'price-low':
+          return a.price - b.price;
+        case 'price-high':
+          return b.price - a.price;
+        case 'rating':
+          return b.rating - a.rating;
+        case 'name':
+        default:
+          return a.name.localeCompare(b.name);
+      }
+    });
+
+    return filtered;
+  }, [products, searchTerm, selectedCategory, priceRange, sortBy]);
 
  
   return (
@@ -133,50 +152,18 @@ export default function MarketplacePage() {
             {/* Results Header */}
             <div className="flex justify-between items-center mb-6">
               <p className="text-gray-600">
-                {loading ? 'Loading...' : `Showing ${products.length} products`}
+                Showing {filteredProducts.length} of {products.length} products
               </p>
             </div>
 
-            {/* Loading State */}
-            {loading && (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                {[...Array(6)].map((_, i) => (
-                  <div key={i} className="bg-white rounded-xl shadow-md p-4 animate-pulse">
-                    <div className="h-48 bg-gray-200 rounded-lg mb-4"></div>
-                    <div className="h-4 bg-gray-200 rounded mb-2"></div>
-                    <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                    <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Error State */}
-            {error && (
-              <div className="text-center py-12">
-                <div className="text-red-400 text-6xl mb-4">⚠️</div>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">Error loading products</h3>
-                <p className="text-gray-600">{error}</p>
-                <button 
-                  onClick={() => searchProducts({})}
-                  className="mt-4 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
-                >
-                  Try Again
-                </button>
-              </div>
-            )}
-
             {/* Products Grid */}
-            {!loading && !error && products.length > 0 && (
+            {filteredProducts.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                {products.map((product) => (
-                  <ProductCard key={product._id} product={product} />
+                {filteredProducts.map((product) => (
+                  <ProductCard key={product.id} product={product} />
                 ))}
               </div>
-            )}
-
-            {/* Empty State */}
-            {!loading && !error && products.length === 0 && (
+            ) : (
               <div className="text-center py-12">
                 <div className="text-gray-400 text-6xl mb-4">🔍</div>
                 <h3 className="text-lg font-medium text-gray-900 mb-2">No products found</h3>
