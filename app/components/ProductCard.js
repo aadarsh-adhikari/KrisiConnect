@@ -1,6 +1,8 @@
 import React from 'react'
-
+import { useAuthStore } from "../store/authStore";
 const ProductCard = ({ product }) => {
+  const user = useAuthStore((state) => state.user);
+
   if (!product) {
     return null;
   }
@@ -82,7 +84,10 @@ const ProductCard = ({ product }) => {
                 <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
               </svg>
             </button>
-            <button className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors font-medium transform hover:scale-105 active:scale-95">
+            <button
+              className={`bg-green-600 text-white px-6 py-2 rounded-lg font-medium transition-colors ${user ? 'hover:bg-green-700 transform hover:scale-105 active:scale-95' : 'opacity-50 cursor-not-allowed'}`}
+              disabled={!user}
+            >
               Add to Cart
             </button>
           </div>
