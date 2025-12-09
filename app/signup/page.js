@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useAuthStore } from "../store/authStore";
 
 const SignupPage = () => {
   const [formData, setFormData] = useState({
@@ -12,6 +13,7 @@ const SignupPage = () => {
   });
   const [message, setMessage] = useState("");
   const router = useRouter();
+  const setUser = useAuthStore((state) => state.setUser);
 
   const handleChange = (e) => {
     setFormData({
@@ -42,11 +44,13 @@ const SignupPage = () => {
       return;
     }
     setMessage("Signup successful!");
-    router.push("/login");
+    setUser(result.user); // Store user in Zustand
+    localStorage.setItem("krisi_user", JSON.stringify(result.user)); // Persist user
+  
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-100 via-green-300 to-green-500">
+    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-green-100 via-green-300 to-green-500">
       <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-8">
         <h2 className="text-3xl font-bold text-center text-green-700 mb-6">Sign Up</h2>
         <form onSubmit={handleSubmit} className="space-y-5">

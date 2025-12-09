@@ -17,7 +17,7 @@ export async function POST(request) {
       return NextResponse.json({ message: "Invalid password" }, { status: 401 });
     }
 
-    return NextResponse.json({ message: "Login successful", user: { name: user.name, email: user.email, role: user.role } }, { status: 200 });
+    return NextResponse.json({ message: "Login successful", user: { _id: user._id, name: user.name, email: user.email, role: user.role } }, { status: 200 });
   } catch (err) {
     console.error(err);
     return NextResponse.json({ message: "Internal Server Error" }, { status: 500 });

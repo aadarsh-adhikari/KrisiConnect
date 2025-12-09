@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "../store/authStore";
 
@@ -11,14 +11,6 @@ const Login = () => {
   const [message, setMessage] = useState("");
   const router = useRouter();
   const setUser = useAuthStore((state) => state.setUser);
-
-  useEffect(() => {
-    // On mount, restore user from localStorage
-    const storedUser = localStorage.getItem("krisi_user");
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-  }, [setUser]);
 
   const handleChange = (e) => {
     setFormData({
@@ -41,12 +33,15 @@ const Login = () => {
     }
     setMessage("Login successful!");
     setUser(result.user); // Store user in Zustand global state
-    localStorage.setItem("krisi_user", JSON.stringify(result.user)); // Persist user
-    router.push("/");
+    if(result.user.role === "farmer") {
+      router.push("/dashboard/farmer");
+    } else {
+      router.push("/");
+    }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-100 via-green-300 to-green-500">
+    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-green-100 via-green-300 to-green-500">
       <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-8">
         <h2 className="text-3xl font-bold text-center text-green-700 mb-6">Login</h2>
         <form onSubmit={handleSubmit} className="space-y-5">
