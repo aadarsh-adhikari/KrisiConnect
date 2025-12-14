@@ -1,11 +1,18 @@
 "use client";
-import React, { useEffect } from 'react'
+import React, { useState, useEffect, useRef} from 'react'
 import Link from 'next/link';
 import { useAuthStore } from "../store/authStore";
+import LoginModal from "./modals/login";
+import SignupModal from "./modals/signup";
+import { FaUserCircle } from "react-icons/fa";
 
 const Navbar = () => {
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showSignupModal, setShowSignupModal] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const dropdownRef = useRef(null);
 
   useEffect(() => {
     // On mount, restore user from localStorage
@@ -15,9 +22,29 @@ const Navbar = () => {
     }
   }, []);
 
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   const handleLogout = () => {
     logout();
     localStorage.removeItem("krisi_user");
+  };
+
+  const handleSwitchToSignup = () => {
+    setShowLoginModal(false);
+    setShowSignupModal(true);
+  };
+
+  const handleSwitchToLogin = () => {
+    setShowSignupModal(false);
+    setShowLoginModal(true);
   };
 
   return (
@@ -35,17 +62,56 @@ const Navbar = () => {
       </nav>
       <div className="space-x-3 flex items-center">
         {user ? (
-          <>
-            <span className="font-medium text-green-700">Hello, {user.name}</span>
-            <button onClick={handleLogout} className="px-4 py-2 rounded bg-gray-100 hover:bg-gray-200">Logout</button>
-          </>
+         <div className="relative" ref={dropdownRef}>
+            <button
+              onClick={() => setShowDropdown(!showDropdown)}
+              className="flex items-center gap-2 hover:text-green-600 focus:outline-none"
+            >
+              <FaUserCircle className="text-3xl text-green-600" />
+              <span className="font-medium text-green-700">{user.name}</span>
+            </button>
+            {showDropdown && (
+              <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
+                <Link
+                  href={user.role === "farmer" ? "/dashboard/farmer" : "/dashboard/buyer"}
+                  className="block px-4 py-2 text-gray-800 hover:bg-green-50 hover:text-green-600"
+                  onClick={() => setShowDropdown(false)}
+                >
+                  Dashboard
+                </Link>
+                <button
+                  onClick={() => {
+                    handleLogout();
+                    setShowDropdown(false);
+                  }}
+                  className="w-full text-left px-4 py-2 text-gray-800 hover:bg-red-50 hover:text-red-600"
+                >
+                  Logout
+                </button>
+              </div>
+            )}
+          </div>
         ) : (
           <>
-            <Link href="/login" className="px-4 py-2 rounded hover:bg-gray-100">Login</Link>
-            <Link href="/signup" className="bg-green-600 text-white px-4 py-2 rounded">Suit on KrisiConnect</Link>
+            <button onClick={() => setShowLoginModal(true)} className="hover:text-green-600">Login</button>
+            <button onClick={() => setShowSignupModal(true)} className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">Join KrisiConnect</button>
           </>
         )}
       </div>
+
+      {/* Login Modal */}
+      <LoginModal 
+        isOpen={showLoginModal} 
+        onClose={() => setShowLoginModal(false)}
+        onSwitchToSignup={handleSwitchToSignup}
+      />
+      
+      {/* Signup Modal */}
+      <SignupModal 
+        isOpen={showSignupModal} 
+        onClose={() => setShowSignupModal(false)}
+        onSwitchToLogin={handleSwitchToLogin}
+      />
     </header>
   )
 }
