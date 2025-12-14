@@ -20,13 +20,17 @@ const FarmerDashboard = () => {
 
   useEffect(() => {
     if (!hydrated) return;
-    if (!user || user.role !== "farmer") {
-      router.replace("/login");
-    } else {
-      fetchProducts();
+    if (!user) {
+      router.replace("/");
+      return;
     }
+    if (user.role !== "farmer") {
+      router.replace("/");
+      return;
+    }
+    fetchProducts();
     // eslint-disable-next-line
-  }, [user, hydrated]);
+  }, [user, hydrated, router]);
 
   const fetchProducts = async () => {
     setLoading(true);
@@ -48,7 +52,6 @@ const FarmerDashboard = () => {
     try {
       const method = editProduct ? "PUT" : "POST";
       const url = editProduct ? `/api/products/${editProduct._id}` : "/api/products";
-      // Fallback for sellerId: use _id or id
       const sellerId = user._id || user.id;
       if (!sellerId) throw new Error("User ID not found. Please log out and log in again.");
       const res = await fetch(url, {
@@ -98,7 +101,7 @@ const FarmerDashboard = () => {
           </div>
           {error && <div className="text-red-600 mb-2">{error}</div>}
           {showForm && (
-            <div className="fixed inset-0 flex items-center justify-center bg-linear-to-br from-green-200 via-green-300 to-green-500 bg-opacity-80 z-50">
+            <div className="fixed inset-0 flex items-center justify-center ">
               <div className="bg-white p-6 rounded shadow-lg w-full max-w-md relative">
                 <button
                   className="absolute top-2 right-2 text-gray-500 hover:text-gray-800"
