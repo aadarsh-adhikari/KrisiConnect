@@ -39,7 +39,7 @@ const BuyerDashboard = () => {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 p-6">
+    <div className="min-h-screen bg-linear-to-br from-green-50 to-blue-50 p-6">
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-4xl font-bold text-green-700 mb-2">Welcome, {user.name}!</h1>
