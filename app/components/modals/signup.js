@@ -11,6 +11,7 @@ const SignupModal = ({ isOpen, onClose, onSwitchToLogin }) => {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
+    contact: "",
     password: "",
     confirmPassword: "",
     role: ""
@@ -22,6 +23,24 @@ const SignupModal = ({ isOpen, onClose, onSwitchToLogin }) => {
 
   const router = useRouter();
   const setUser = useAuthStore((state) => state.setUser);
+
+  const handleClose = () => {
+    setLoading(false);
+    setMessage("");
+    setFormData({ name: "", email: "", contact: "", password: "", confirmPassword: "", role: "" });
+    setShowPassword(false);
+    setShowConfirmPassword(false);
+    onClose();
+  };
+
+  const handleSwitchToLogin = () => {
+    setLoading(false);
+    setMessage("");
+    setFormData({ name: "", email: "", contact: "", password: "", confirmPassword: "", role: "" });
+    setShowPassword(false);
+    setShowConfirmPassword(false);
+    onSwitchToLogin();
+  };
 
   if (!isOpen) return null;
 
@@ -44,6 +63,7 @@ const SignupModal = ({ isOpen, onClose, onSwitchToLogin }) => {
       const res = await axios.post("/api/auth/signup", {
         name: formData.name,
         email: formData.email,
+        contact: formData.contact,
         password: formData.password,
         role: formData.role
       });
@@ -58,19 +78,19 @@ const SignupModal = ({ isOpen, onClose, onSwitchToLogin }) => {
   };
 
   return (
-    <div className="fixed inset-0  bg-opacity-50 flex items-center justify-center z-50">
-      <div className="w-full  max-w-md bg-white rounded-3xl shadow-2xl p-10 relative flex flex-col items-center m-4">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-60 p-4 overflow-auto min-h-screen overflow-auto scrollbar-hide">
+      <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl p-6 relative flex flex-col items-center m-4 max-h-[98vh] ">
         <button
-          onClick={onClose}
+          onClick={handleClose}
           className="absolute top-4 right-4 text-black hover:text-white text-xl font-bold bg-red-600  hover:bg-red-500 rounded-full px-2"
         >
           ×
         </button>
-        <div className="flex flex-col items-center mb-6">
-          <h2 className="text-4xl font-extrabold text-green-700 mb-1 tracking-tight drop-shadow">Sign Up</h2>
+        <div className="flex flex-col items-center mb-4">
+          <h2 className="text-3xl font-extrabold text-green-700 mb-1 tracking-tight">Sign Up</h2>
           <p className="text-gray-500 text-sm">Create your KrisiConnect account</p>
         </div>
-        <form onSubmit={handleSubmit} className="space-y-6 w-full">
+        <form onSubmit={handleSubmit} className="space-y-4 w-full">
           <div>
             <label htmlFor="name" className="block text-sm font-semibold text-green-700 mb-1">Name</label>
             <input
@@ -95,6 +115,19 @@ const SignupModal = ({ isOpen, onClose, onSwitchToLogin }) => {
               required
               className="w-full px-4 py-2 border border-green-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 bg-green-50 text-gray-900"
               placeholder="Enter your email"
+            />
+          </div>
+          <div>
+            <label htmlFor="contact" className="block text-sm font-semibold text-green-700 mb-1">Contact number</label>
+            <input
+              type="tel"
+              name="contact"
+              id="contact"
+              value={formData.contact}
+              onChange={handleChange}
+              required
+              className="w-full px-4 py-2 border border-green-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 bg-green-50 text-gray-900"
+              placeholder="Enter contact number"
             />
           </div>
           <div>
@@ -178,13 +211,13 @@ const SignupModal = ({ isOpen, onClose, onSwitchToLogin }) => {
           </button>
         </form>
         {message && (
-          <div className={`mt-6 text-center text-base font-semibold animate-fade-in ${
+          <div className={`mt-2 text-center text-base font-semibold animate-fade-in ${
             message.includes("successful") ? "text-green-700" : "text-red-600"
           }`}>
             {message}
           </div>
         )}
-        <div className="mt-6 text-center text-sm text-gray-500">
+        <div className="mt-2 text-center text-sm text-gray-500">
           Already have an account?{' '}
           <button onClick={onSwitchToLogin} className="text-green-700 font-semibold hover:underline">Login</button>
         </div>

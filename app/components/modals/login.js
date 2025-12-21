@@ -30,28 +30,38 @@ const LoginModal = ({ isOpen, onClose, onSwitchToSignup }) => {
     e.preventDefault();
     setLoading(true);
     setMessage("");
+    let success = false;
     try {
-      const res = await axios.post("/api/auth/login", formData);
+      // Add a 10s timeout to avoid hanging requests
+      const res = await axios.post("/api/auth/login", formData, { timeout: 10000 });
+      success = true;
       setMessage("Login successful!");
       setUser(res.data.user);
       localStorage.setItem("krisi_user", JSON.stringify(res.data.user));
       setTimeout(() => {
         onClose();
-        if(res.data.user.role === "farmer") {
+        if (res.data.user.role === "farmer") {
           router.push("/dashboard/farmer");
         } else {
           router.push("/dashboard/buyer");
         }
       }, 1000);
     } catch (error) {
-      setMessage(error.response?.data?.message || "Login failed. Please try again.");
-      setLoading(false);
+      if (error.code === 'ECONNABORTED') {
+        setMessage('Request timed out. Please check your network and try again.');
+      } else {
+        setMessage(error.response?.data?.message || error.message || "Login failed. Please try again.");
+      }
+    } finally {
+      if (!success) setLoading(false);
+      // If successful, keep the subtle loading for the UX but stop shortly after navigation begins
+      if (success) setTimeout(() => setLoading(false), 1200);
     }
   };
 
   return (
-    <div className="fixed inset-0 bg-opacity-50 flex items-center justify-center z-50">
-      <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl p-10 relative flex flex-col items-center m-4">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-60 p-4 overflow-auto min-h-screen">
+      <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl p-10 relative flex flex-col items-center m-4 max-h-[85vh] overflow-auto scrollbar-hide">
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-black hover:text-white text-xl font-bold bg-red-600  hover:bg-red-500 rounded-full px-2 "

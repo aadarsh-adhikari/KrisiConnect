@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 export async function POST(req) {
     try{
-        const {name, email, password, role} = await req.json()
+        const {name, email, password, role, contact} = await req.json()
          if(!name || !email || !password || !role){
             return NextResponse.json({message:"all field must be filled"}, {status:400})
         }
@@ -14,11 +14,11 @@ export async function POST(req) {
             return NextResponse.json({message:"email already exists"}, {status:500})
         }
         const hashedPassword = await bcrypt.hash(password,10)
-        const newUser = new User({name, email, password:hashedPassword , role})
+        const newUser = new User({name, email, password:hashedPassword , role, contact})
         await newUser.save();
         return NextResponse.json({
             message: "user created successfully",
-            user: { _id: newUser._id, name: newUser.name, email: newUser.email, role: newUser.role }
+            user: { _id: newUser._id, name: newUser.name, email: newUser.email, role: newUser.role, contact: newUser.contact }
         }, { status: 201 })
     }
    catch(e){
