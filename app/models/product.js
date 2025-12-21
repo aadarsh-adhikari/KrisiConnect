@@ -7,7 +7,6 @@ const productSchema = mongoose.Schema({
     quantity: { type: Number, required: true },
     sellerId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
     rating: { type: Number, default: 0 , min: 0, max: 5 },
-    reviews: { type: Number, default: 0 },
     images: [{ type: String }],
     location: { type: String, required: true },
     createdAt: { type: Date, default: Date.now },

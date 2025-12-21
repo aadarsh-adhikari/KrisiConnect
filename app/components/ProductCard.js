@@ -1,5 +1,6 @@
 import React from 'react'
 import { useAuthStore } from "../store/authStore";
+import Link from 'next/link';
 const ProductCard = ({ product }) => {
   const user = useAuthStore((state) => state.user);
 
@@ -8,26 +9,34 @@ const ProductCard = ({ product }) => {
   }
   
   return (
-    <div className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 group overflow-hidden border border-gray-100">
-      {/* Product Image */}
-      <div className="relative h-48 bg-linear-to-br from-green-50 to-green-100 overflow-hidden">
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="w-24 h-24 bg-white rounded-full shadow-lg flex items-center justify-center">
-            <span className="text-green-600 text-2xl">🥬</span>
-          </div>
+    <Link href={`/product/${product._id}`} className="block">
+      <div className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 group overflow-hidden border border-gray-100">
+        {/* Product Image */}
+        <div className="relative h-48 bg-linear-to-br from-green-50 to-green-100 overflow-hidden">
+          {product.images && product.images.length > 0 ? (
+            <img src={product.images[0]} alt={product.name} className="w-full h-full object-cover" />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-gray-300">No image</div>
+          )}
+
+          {/* Discount Badge */}
+          {product.rating > 4.5 && (
+            <div className="absolute top-3 left-3 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+              FRESH
+            </div>
+          )}
+          {/* Stock Status */}
+          {product?.quantity === 0 ? (
+            <div className="absolute top-3 right-3 bg-red-100 text-red-700 text-xs font-medium px-2 py-1 rounded-full">
+              Out of stock
+            </div>
+          ) : (
+            <div className="absolute top-3 right-3 bg-green-100 text-green-700 text-xs font-medium px-2 py-1 rounded-full">
+              In Stock
+            </div>
+          )
+        }
         </div>
-        {/* Discount Badge */}
-        {product.rating > 4.5 && (
-          <div className="absolute top-3 left-3 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
-            FRESH
-          </div>
-        )}
-        {/* Stock Status */}
-        <div className="absolute top-3 right-3 bg-green-100 text-green-700 text-xs font-medium px-2 py-1 rounded-full">
-          In Stock
-        </div>
-      </div>
-      
       {/* Product Details */}
       <div className="p-5">
         {/* Category */}
@@ -93,7 +102,8 @@ const ProductCard = ({ product }) => {
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </Link>
   )
 }
 

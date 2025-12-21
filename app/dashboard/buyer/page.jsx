@@ -4,12 +4,41 @@ import { useAuthStore } from "@/app/store/authStore";
 import { useRouter } from "next/navigation";
 import { FaShoppingCart, FaHeart, FaBox, FaLeaf } from "react-icons/fa";
 import Link from "next/link";
+import ProductCard from "@/app/components/ProductCard";
 
 const BuyerDashboard = () => {
   const user = useAuthStore((state) => state.user);
+  const logout = useAuthStore((state) => state.logout);
   const router = useRouter();
   const [orders, setOrders] = useState([]);
+  const [favorites, setFavorites] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
+
+  const handleDeleteAccount = async () => {
+    if (!window.confirm("Are you sure? This will permanently delete your account.")) return;
+    setDeleteLoading(true);
+    setDeleteError("");
+    try {
+      const res = await fetch(`/api/users/${user._id}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json', 'x-requester-id': user._id },
+        body: JSON.stringify({ requesterId: user._id }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || 'Failed to delete account');
+      }
+      // Success -> logout and redirect
+      logout();
+      localStorage.removeItem('krisi_user');
+      router.replace('/');
+    } catch (e) {
+      setDeleteError(e.message);
+    }
+    setDeleteLoading(false);
+  };
 
   useEffect(() => {
     if (!user) {
@@ -22,7 +51,42 @@ const BuyerDashboard = () => {
     }
 
     fetchData();
+    fetchFavorites();
+
+    const onFavChange = () => fetchFavorites();
+    window.addEventListener("krisi:favorites:changed", onFavChange);
+    return () => window.removeEventListener("krisi:favorites:changed", onFavChange);
   }, [user, router]);
+
+  const fetchFavorites = async () => {
+    if (!user) return;
+    try {
+      const res = await fetch(`/api/users/${user._id}/favorites`);
+      if (!res.ok) throw new Error("Failed to fetch favorites");
+      const serverFavs = await res.json();
+
+      // Merge local favorites (product ids stored locally) that may not be on server
+      let merged = serverFavs || [];
+      try {
+        const localIds = JSON.parse(localStorage.getItem("krisi_favs") || "[]");
+        const missing = (Array.isArray(localIds) ? localIds : []).filter((id) => !merged.find((p) => p._id === id));
+        if (missing.length > 0) {
+          const allRes = await fetch("/api/products");
+          if (allRes.ok) {
+            const all = await allRes.json();
+            const extra = all.filter((p) => missing.includes(p._id));
+            merged = [...merged, ...extra];
+          }
+        }
+      } catch (e) {
+        // ignore localStorage parse errors
+      }
+
+      setFavorites(merged);
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   const fetchData = async () => {
     try {
@@ -41,9 +105,21 @@ const BuyerDashboard = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 p-6">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold text-green-700 mb-2">Welcome, {user.name}!</h1>
-        <p className="text-gray-600">Manage your orders and discover fresh farm products</p>
+      <div className="mb-8 flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-4xl font-bold text-green-700 mb-2">Welcome, {user.name}!</h1>
+          <p className="text-gray-600">Manage your orders and discover fresh farm products</p>
+        </div>
+        <div className="mt-2">
+          {deleteError && <div className="text-red-600 mb-2">{deleteError}</div>}
+          <button
+            onClick={handleDeleteAccount}
+            disabled={deleteLoading}
+            className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-md shadow-sm transition disabled:opacity-50"
+          >
+            {deleteLoading ? 'Deleting...' : 'Delete Account'}
+          </button>
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -79,7 +155,7 @@ const BuyerDashboard = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-gray-500 text-sm">Saved Items</p>
-              <p className="text-3xl font-bold text-yellow-700">0</p>
+              <p className="text-3xl font-bold text-yellow-700">{favorites.length}</p>
             </div>
             <FaLeaf className="text-4xl text-yellow-200" />
           </div>
@@ -126,6 +202,39 @@ const BuyerDashboard = () => {
               )}
             </div>
        
+        </div>
+      </div>
+
+      {/* Favorites Section */}
+      <div className="bg-white rounded-lg shadow mb-6">
+        <div className="border-b p-6">
+          <h2 className="text-2xl font-bold text-yellow-700">
+            <FaHeart className="inline mr-2 text-red-600" /> Saved Items
+          </h2>
+        </div>
+        <div className="p-6">
+          {favorites.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-gray-500">You haven't saved any products yet.</p>
+              <Link href="/marketplace" className="inline-block bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-semibold mt-4">Browse Marketplace</Link>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {favorites.map((p) => (
+                <ProductCard
+                  key={p._id}
+                  product={p}
+                  onToggleFavorite={(id, favs) => {
+                    // if user unfavorited, remove from favorites list
+                    const me = user._id?.toString();
+                    const stillFavorited = (favs || []).find((u) => u.toString() === me);
+                    if (!stillFavorited) setFavorites((prev) => prev.filter((x) => x._id !== id));
+                    else setFavorites((prev) => prev.map((x) => (x._id === id ? { ...x, favorites: favs } : x)));
+                  }}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

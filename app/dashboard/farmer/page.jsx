@@ -3,9 +3,11 @@ import { useState, useEffect } from "react";
 import { useAuthStore } from "../../store/authStore";
 import { useRouter } from "next/navigation";
 import ProductForm from "./ProductForm";
+import {FaTimes} from "react-icons/fa";
 
 const FarmerDashboard = () => {
   const user = useAuthStore((state) => state.user);
+  const logout = useAuthStore((state) => state.logout);
   const router = useRouter();
   const [hydrated, setHydrated] = useState(false);
   const [products, setProducts] = useState([]);
@@ -13,6 +15,34 @@ const FarmerDashboard = () => {
   const [showForm, setShowForm] = useState(false);
   const [editProduct, setEditProduct] = useState(null);
   const [error, setError] = useState("");
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
+  const [deleteSuccess, setDeleteSuccess] = useState("");
+
+  const handleDeleteAccount = async () => {
+    if (!window.confirm("Are you sure? This will permanently delete your account and all your products.")) return;
+    setDeleteLoading(true);
+    setDeleteError("");
+    try {
+      const res = await fetch(`/api/users/${user._id}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json', 'x-requester-id': user._id },
+        body: JSON.stringify({ requesterId: user._id }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || 'Failed to delete account');
+      }
+      setDeleteSuccess('Account deleted');
+      // perform client-side logout and redirect
+      logout();
+      localStorage.removeItem('krisi_user');
+      router.replace('/');
+    } catch (e) {
+      setDeleteError(e.message);
+    }
+    setDeleteLoading(false);
+  };
 
   useEffect(() => {
     setHydrated(true);
@@ -51,13 +81,16 @@ const FarmerDashboard = () => {
     setError("");
     try {
       const method = editProduct ? "PUT" : "POST";
-      const url = editProduct ? `/api/products/${editProduct._id}` : "/api/products";
+      const url = editProduct
+        ? `/api/products/${editProduct._id}`
+        : "/api/products";
       const sellerId = user._id || user.id;
-      if (!sellerId) throw new Error("User ID not found. Please log out and log in again.");
+      if (!sellerId)
+        throw new Error("User ID not found. Please log out and log in again.");
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, sellerId })
+        body: JSON.stringify({ ...form, sellerId }),
       });
       if (!res.ok) throw new Error("Failed to save product");
       setShowForm(false);
@@ -87,32 +120,77 @@ const FarmerDashboard = () => {
 
   return (
     <div className="min-h-screen bg-linear-to-br from-green-100 via-green-200 to-green-400 flex flex-col items-center p-8">
-      <h1 className="text-4xl font-bold text-green-800 mb-6">Farmer Dashboard</h1>
+      <h1 className="text-4xl font-bold text-green-800 mb-6">
+        Farmer Dashboard
+      </h1>
       <div className="w-full max-w-4xl bg-white rounded-xl shadow-lg p-8 flex flex-col gap-8">
         <section>
-          <h2 className="text-2xl font-semibold text-green-700 mb-2">Welcome, {user.name}!</h2>
-          <p className="text-gray-700">Role: <span className="font-medium text-green-600">{user.role}</span></p>
-          <p className="text-gray-700">Email: <span className="font-medium">{user.email}</span></p>
+          <h2 className="text-2xl font-semibold text-green-700 mb-2">
+            Welcome, {user.name}!
+          </h2>
+          <p className="text-gray-700">
+            Role:{" "}
+            <span className="font-medium text-green-600">{user.role}</span>
+          </p>
+          <p className="text-gray-700">
+            Email: <span className="font-medium">{user.email}</span>
+          </p>
+
+          <div className="mt-4">
+            <p className="text-sm text-gray-600 mb-2">Danger zone</p>
+            {deleteError && <div className="text-red-600 mb-2">{deleteError}</div>}
+            {deleteSuccess && <div className="text-green-600 mb-2">{deleteSuccess}</div>}
+            <button
+              onClick={handleDeleteAccount}
+              disabled={deleteLoading}
+              className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md shadow-sm transition disabled:opacity-50"
+            >
+              {deleteLoading ? 'Deleting account...' : 'Delete Account'}
+            </button>
+          </div>
         </section>
         <section>
           <div className="flex justify-between items-center mb-2">
-            <h3 className="text-xl font-semibold text-green-700">Your Products</h3>
-            <button onClick={() => { setShowForm(true); setEditProduct(null); }} className="bg-green-600 text-white px-4 py-2 rounded font-semibold hover:bg-green-700 transition">Add Product</button>
+            <h3 className="text-xl font-semibold text-green-700">
+              Your Products
+            </h3>
+            <button
+              onClick={() => {
+                setShowForm(true);
+                setEditProduct(null);
+              }}
+              className="bg-green-600 text-white px-4 py-2 rounded font-semibold hover:bg-green-700 transition"
+            >
+              Add Product
+            </button>
           </div>
           {error && <div className="text-red-600 mb-2">{error}</div>}
           {showForm && (
-            <div className="fixed inset-0 flex items-center justify-center ">
-              <div className="bg-white p-6 rounded shadow-lg w-full max-w-md relative">
+            <div className="fixed inset-0 flex items-center justify-center z-60 bg-black/40 p-4">
+              <div className="bg-white p-4 rounded shadow-lg w-full max-w-xl relative h-[96vh] overflow-auto scrollbar-hide">
+                <div className="max-w-full overflow-hidden">
+                  <div className="px-2 py-1">
+                    {/* reduced padding wrapper to save vertical space */}
+                  </div>
+                </div>
                 <button
-                  className="absolute top-2 right-2 text-gray-500 hover:text-gray-800"
-                  onClick={() => setShowForm(false)}
+                  className="absolute top-2 right-2 bg-gray-800 hover:bg-gray-500 p-1 rounded-full"
+                  onClick={() => {
+                    setShowForm(false);
+                    setEditProduct(null);
+                  }}
                 >
-                  &times;
+                  <FaTimes className="text-red-600 " />
                 </button>
                 <ProductForm
-                  onSave={(data) => {
-                    handleSave(data);
+                  onSave={async (data) => {
+                    await handleSave(data);
                     setShowForm(false);
+                    setEditProduct(null);
+                  }}
+                  onCancel={() => {
+                    setShowForm(false);
+                    setEditProduct(null);
                   }}
                   initial={editProduct}
                   loading={loading}
@@ -134,7 +212,11 @@ const FarmerDashboard = () => {
               </thead>
               <tbody>
                 {products.length === 0 && (
-                  <tr><td colSpan={6} className="text-center p-4 text-gray-400">No products yet.</td></tr>
+                  <tr>
+                    <td colSpan={6} className="text-center p-4 text-gray-400">
+                      No products yet.
+                    </td>
+                  </tr>
                 )}
                 {products.map((p) => (
                   <tr key={p._id} className="hover:bg-green-50">
@@ -144,8 +226,21 @@ const FarmerDashboard = () => {
                     <td className="p-2 border">{p.quantity}</td>
                     <td className="p-2 border">{p.location}</td>
                     <td className="p-2 border space-x-2">
-                      <button onClick={() => { setEditProduct(p); setShowForm(true); }} className="px-2 py-1 bg-yellow-400 text-white rounded">Edit</button>
-                      <button onClick={() => handleDelete(p._id)} className="px-2 py-1 bg-red-500 text-white rounded">Delete</button>
+                      <button
+                        onClick={() => {
+                          setEditProduct(p);
+                          setShowForm(true);
+                        }}
+                        className="px-2 py-1 bg-yellow-400 text-white rounded"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDelete(p._id)}
+                        className="px-2 py-1 bg-red-500 text-white rounded"
+                      >
+                        Delete
+                      </button>
                     </td>
                   </tr>
                 ))}
