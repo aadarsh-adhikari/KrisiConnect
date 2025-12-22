@@ -99,8 +99,15 @@ const ProductForm = ({ onSave, initial, loading, onCancel }) => {
     const formData = new FormData();
     formData.append("image", file);
     // allow progress tracking if needed
-    const res = await axios.post("/api/upload", formData);
-    return res.data.url;
+    try {
+      const res = await axios.post("/api/upload", formData);
+      return res.data.url;
+    } catch (err) {
+      // Log server response for debugging and propagate a helpful message
+      console.error('Upload API error', err.response?.data || err.message || err);
+      const serverMsg = err.response?.data?.message || err.response?.data?.error || err.message;
+      throw new Error(serverMsg || 'Upload failed');
+    }
   };
 
   const validate = () => {
