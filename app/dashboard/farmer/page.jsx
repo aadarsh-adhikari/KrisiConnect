@@ -4,6 +4,7 @@ import { useAuthStore } from "../../store/authStore";
 import { useRouter } from "next/navigation";
 import ProductForm from "./ProductForm";
 import {FaTimes} from "react-icons/fa";
+import ProductsTable from "../../components/ProductsTable";
 
 const FarmerDashboard = () => {
   const user = useAuthStore((state) => state.user);
@@ -154,15 +155,6 @@ const FarmerDashboard = () => {
             <h3 className="text-xl font-semibold text-green-700">
               Your Products
             </h3>
-            <button
-              onClick={() => {
-                setShowForm(true);
-                setEditProduct(null);
-              }}
-              className="bg-green-600 text-white px-4 py-2 rounded font-semibold hover:bg-green-700 transition"
-            >
-              Add Product
-            </button>
           </div>
           {error && <div className="text-red-600 mb-2">{error}</div>}
           {showForm && (
@@ -199,53 +191,15 @@ const FarmerDashboard = () => {
             </div>
           )}
           <div className="overflow-x-auto mt-4">
-            <table className="min-w-full border text-sm">
-              <thead>
-                <tr className="bg-green-100">
-                  <th className="p-2 border">Name</th>
-                  <th className="p-2 border">Category</th>
-                  <th className="p-2 border">Price</th>
-                  <th className="p-2 border">Qty</th>
-                  <th className="p-2 border">Location</th>
-                  <th className="p-2 border">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {products.length === 0 && (
-                  <tr>
-                    <td colSpan={6} className="text-center p-4 text-gray-400">
-                      No products yet.
-                    </td>
-                  </tr>
-                )}
-                {products.map((p) => (
-                  <tr key={p._id} className="hover:bg-green-50">
-                    <td className="p-2 border">{p.name}</td>
-                    <td className="p-2 border">{p.category}</td>
-                    <td className="p-2 border">₹{p.price}</td>
-                    <td className="p-2 border">{p.quantity}</td>
-                    <td className="p-2 border">{p.location}</td>
-                    <td className="p-2 border space-x-2">
-                      <button
-                        onClick={() => {
-                          setEditProduct(p);
-                          setShowForm(true);
-                        }}
-                        className="px-2 py-1 bg-yellow-400 text-white rounded"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDelete(p._id)}
-                        className="px-2 py-1 bg-red-500 text-white rounded"
-                      >
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <ProductsTable
+              products={products}
+              onEdit={(p) => {
+                setEditProduct(p);
+                setShowForm(true);
+              }}
+              onDelete={(id) => handleDelete(id)}
+              onAdd={() => { setShowForm(true); setEditProduct(null); }}
+            />
           </div>
         </section>
         {/* Orders section can be implemented here */}

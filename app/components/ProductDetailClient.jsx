@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "../store/authStore";
+import { useCartStore } from "../store/cartStore";
 
 const formatDate = (iso) => {
   if (!iso) return "";
@@ -39,6 +40,16 @@ const ProductDetailClient = ({ product }) => {
 
   const prev = () => setIndex((i) => (i - 1 + images.length) % images.length);
   const next = () => setIndex((i) => (i + 1) % images.length);
+
+  const addItem = useCartStore((s) => s.addItem);
+  const [added, setAdded] = React.useState(false);
+
+  const handleAddToCart = () => {
+    if (!product) return;
+    addItem(product, 1);
+    setAdded(true);
+    setTimeout(() => setAdded(false), 1400);
+  };
 
   return (
     <div className="bg-white rounded-xl shadow p-6">
@@ -100,7 +111,7 @@ const ProductDetailClient = ({ product }) => {
           <div className="mt-6 flex flex-col gap-3">
             {/* Contact: WhatsApp if phone available; fallback to email */}
             <ContactSellerButton product={product} />
-            <button className="border px-4 py-2 rounded text-gray-700">Add to Cart</button>
+            <button onClick={handleAddToCart} className={`border px-4 py-2 rounded ${added ? 'bg-green-50 text-green-700 cursor-default' : 'text-gray-700 hover:bg-gray-100'}`}>{added ? 'Added' : 'Add to Cart'}</button>
           </div>
 
           <div className="mt-6 text-sm text-gray-500">

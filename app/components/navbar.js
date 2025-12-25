@@ -4,8 +4,9 @@ import Link from "next/link";
 import { useAuthStore } from "../store/authStore";
 import LoginModal from "./modals/login";
 import SignupModal from "./modals/signup";
-import { FaUserCircle, FaBars, FaTimes } from "react-icons/fa";
+import { FaUserCircle, FaBars, FaTimes, FaShoppingCart } from "react-icons/fa";
 import Image from "next/image";
+import { useCartStore } from "../store/cartStore";
 const Navbar = () => {
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
@@ -15,6 +16,7 @@ const Navbar = () => {
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const dropdownRef = useRef(null);
   const mobileMenuRef = useRef(null);
+  const totalItems = useCartStore((s) => s.items.reduce((acc, i) => acc + (i.qty || 0), 0));
 
   useEffect(() => {
     // On mount, restore user from localStorage
@@ -75,18 +77,24 @@ const Navbar = () => {
         <Link href="/marketplace" className="hover:text-green-600 transition-colors">
           Marketplace
         </Link>
-        <Link href="#" className="hover:text-green-600 transition-colors">
+        <Link href="/farmers" className="hover:text-green-600 transition-colors">
           Farmers
         </Link>
-        <Link href="#" className="hover:text-green-600 transition-colors">
+        <Link href="/about" className="hover:text-green-600 transition-colors">
           About
         </Link>
-        <Link href="#" className="hover:text-green-600 transition-colors">
+        <Link href="/contact" className="hover:text-green-600 transition-colors">
           Contact
         </Link>
       </nav>
 
       <div className="hidden md:flex items-center gap-3">
+        <Link href="/cart" className="relative inline-flex items-center p-2 hover:text-green-600">
+          <FaShoppingCart className="text-2xl text-green-600" />
+          {totalItems > 0 && (
+            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">{totalItems}</span>
+          )}
+        </Link>
         {user ? (
           <div className="relative" ref={dropdownRef}>
             <button
@@ -164,9 +172,10 @@ const Navbar = () => {
             <nav className="flex flex-col gap-3">
               <Link href="/" onClick={() => setShowMobileMenu(false)} className="py-2 px-3 rounded hover:bg-gray-50">Home</Link>
               <Link href="/marketplace" onClick={() => setShowMobileMenu(false)} className="py-2 px-3 rounded hover:bg-gray-50">Marketplace</Link>
-              <Link href="#" onClick={() => setShowMobileMenu(false)} className="py-2 px-3 rounded hover:bg-gray-50">Farmers</Link>
-              <Link href="#" onClick={() => setShowMobileMenu(false)} className="py-2 px-3 rounded hover:bg-gray-50">About</Link>
-              <Link href="#" onClick={() => setShowMobileMenu(false)} className="py-2 px-3 rounded hover:bg-gray-50">Contact</Link>
+              <Link href="/farmers" onClick={() => setShowMobileMenu(false)} className="py-2 px-3 rounded hover:bg-gray-50">Farmers</Link>
+              <Link href="/about" onClick={() => setShowMobileMenu(false)} className="py-2 px-3 rounded hover:bg-gray-50">About</Link>
+              <Link href="/cart" onClick={() => setShowMobileMenu(false)} className="py-2 px-3 rounded hover:bg-gray-50">Cart {totalItems > 0 && (<span className="ml-2 inline-block bg-red-500 text-white text-xs rounded-full w-5 h-5 text-center">{totalItems}</span>)}</Link>
+              <Link href="/contact" onClick={() => setShowMobileMenu(false)} className="py-2 px-3 rounded hover:bg-gray-50">Contact</Link>
             </nav>
 
             <div className="mt-4">

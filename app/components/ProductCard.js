@@ -1,109 +1,170 @@
-import React from 'react'
-import { useAuthStore } from "../store/authStore";
-import Link from 'next/link';
-const ProductCard = ({ product }) => {
-  const user = useAuthStore((state) => state.user);
+"use client";
 
-  if (!product) {
-    return null;
+"use client";
+
+import React, { useState, useMemo } from 'react'
+import Link from 'next/link'
+import Image from 'next/image'
+import { FaShoppingCart, FaCheck } from 'react-icons/fa'
+import { useAuthStore } from '../store/authStore'
+import { useCartStore } from '../store/cartStore'
+
+/**
+ * ProductCard
+ * Responsive, accessible product card that surfaces fields from the product schema:
+ * - name, description, category, price, quantity, rating, images, location, createdAt, sellerId
+ * 
+ * Props:
+ * - product (required)
+ * - onAddToCart (optional) => function(product, qty)
+ */
+const ProductCard = ({ product, onAddToCart }) => {
+  const user = useAuthStore((s) => s.user)
+  const addItem = useCartStore((s) => s.addItem)
+  const [qty, setQty] = useState(product?.quantity > 0 ? 1 : 0)
+  const [added, setAdded] = useState(false)
+
+  if (!product) return null
+
+  const maxQty = product.quantity ?? 0
+  const inStock = maxQty > 0
+  const createdAt = useMemo(() => new Date(product.createdAt).toLocaleDateString(), [product.createdAt])
+
+  const performAdd = () => {
+    if (!inStock) return
+    addItem(product, qty)
+    setAdded(true)
+    setTimeout(() => setAdded(false), 1400)
   }
-  
+
+  const handleAdd = (e) => {
+    if (e && typeof e.preventDefault === 'function') e.preventDefault()
+    if (typeof onAddToCart === 'function') return onAddToCart(product, qty)
+    performAdd()
+  }
+
   return (
-    <Link href={`/product/${product._id}`} className="block">
-      <div className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 group overflow-hidden border border-gray-100">
-        {/* Product Image */}
-        <div className="relative h-48 bg-linear-to-br from-green-50 to-green-100 overflow-hidden">
+    <article className="group bg-white rounded-xl shadow-sm hover:shadow-lg transform hover:scale-[0.52] scale-[0.5] transition duration-200 border border-gray-100 overflow-hidden w-2xs">
+      {/* Image area */}
+      <div className="relative w-full h-60 sm:h-72 md:h-80 bg-white flex items-center justify-center">
+        <Link href={`/product/${product._id}`} className="block absolute inset-0 z-0" />
+
+        <div className="w-full h-full relative z-0">
           {product.images && product.images.length > 0 ? (
-            <img src={product.images[0]} alt={product.name} className="w-full h-full object-cover" />
+            <Image
+              src={product.images[0]}
+              alt={product.name}
+              fill
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 400px"
+              className="object-cover"
+              priority={false}
+            />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-gray-300">No image</div>
           )}
+        </div>
 
-          {/* Discount Badge */}
-          {product.rating > 4.5 && (
-            <div className="absolute top-3 left-3 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
-              FRESH
-            </div>
-          )}
-          {/* Stock Status */}
-          {product?.quantity === 0 ? (
-            <div className="absolute top-3 right-3 bg-red-100 text-red-700 text-xs font-medium px-2 py-1 rounded-full">
-              Out of stock
-            </div>
-          ) : (
-            <div className="absolute top-3 right-3 bg-green-100 text-green-700 text-xs font-medium px-2 py-1 rounded-full">
-              In Stock
-            </div>
-          )
-        }
+        {/* Add-to-cart overlay */}
+        <div className="absolute top-3 right-3 z-10">
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); e.preventDefault(); performAdd() }}
+            aria-label="Add to cart"
+            title="Add to cart"
+            className="p-2 rounded-full bg-white shadow hover:bg-gray-50 border border-gray-100 flex items-center justify-center"
+          >
+            {added ? <FaCheck className="text-green-600" /> : <FaShoppingCart className="text-gray-700" />}
+          </button>
         </div>
-      {/* Product Details */}
-      <div className="p-5">
-        {/* Category */}
-        <span className="text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded-full">
-          {product.category}
-        </span>
-        
-        {/* Product Name */}
-        <h3 className="font-bold text-xl mt-3 mb-2 text-gray-800 group-hover:text-green-600 transition-colors">
-          {product.name}
-        </h3>
-        
-        {/* Description */}
-        <p className="text-sm text-gray-600 mb-3 ">
-          {product.description}
-        </p>
-        
-        {/* Farmer Info */}
-        <div className="flex items-center mb-3">
-          <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mr-2">
-            <span className="text-green-600 text-sm">👨‍🌾</span>
+      </div>
+
+      {/* Content */}
+      <div className="p-4 sm:p-5">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex-1">
+            <h3 className="text-lg sm:text-xl font-semibold text-gray-900 line-clamp-2">{product.name}</h3>
+            <div className="mt-2 flex flex-wrap gap-2">
+              <span className="text-xs font-medium px-2 py-1 border rounded-md bg-white text-gray-700">{product.unit?.toUpperCase() ?? 'UNIT'}</span>
+              <span className="text-xs font-medium px-2 py-1 border rounded-md bg-white text-gray-700">{product.category}</span>
+            </div>
+
+            <p className="text-sm text-gray-600 mt-3 line-clamp-3">{product.description}</p>
+
+            <div className="mt-3 flex items-center gap-3 text-sm text-gray-500">
+              <div className="flex items-center gap-2">
+                <span className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">👨‍🌾</span>
+                <div>
+                  <div className="text-gray-700 font-medium">{product.sellerName ?? product.farmer ?? (product.sellerId && typeof product.sellerId === 'object' ? product.sellerId.name : product.sellerId) ?? 'Seller'}</div>
+                  <div className="text-xs">{product.location}</div>
+                </div>
+              </div>
+
+              <div className="ml-auto text-xs text-gray-400">Added: {createdAt}</div>
+            </div>
           </div>
-          <div>
-            <p className="text-sm font-medium text-gray-700">{product.farmer}</p>
-            <p className="text-xs text-gray-500">{product.location}</p>
-          </div>
-        </div>
-        
-        {/* Rating */}
-        <div className="flex items-center mb-4">
-          <div className="flex items-center">
-            {[...Array(5)].map((_, i) => (
-              <span key={i} className={`text-sm ${i < Math.floor(product.rating) ? 'text-yellow-400' : 'text-gray-300'}`}>
-                ★
-              </span>
-            ))}
-          </div>
-          <span className="ml-2 text-sm text-gray-600">
-            {product.rating} ({product.reviews})
-          </span>
-        </div>
-        
-        {/* Price and Actions */}
-        <div className="flex items-center justify-between">
-          <div>
-            <span className="text-2xl font-bold text-green-600">
-              ₹{product.price}
-            </span>
-            <span className="text-sm text-gray-500">/{product.unit}</span>
-          </div>
-          <div className="flex space-x-2">
-            <button className="p-2 text-gray-400 hover:text-red-500 transition-colors">
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
-              </svg>
-            </button>
-            <button
-              className={`bg-green-600 text-white px-6 py-2 rounded-lg font-medium transition-colors ${user ? 'hover:bg-green-700 transform hover:scale-105 active:scale-95' : 'opacity-50 cursor-not-allowed'}`}
-              disabled={!user}
-            >
-              Add to Cart
-            </button>
+
+          <div className="shrink-0 flex flex-col items-end text-right">
+            <div className="text-xs text-gray-400">Price</div>
+            <div className="text-2xl font-bold text-gray-900">₹{product.price}</div>
+            <div className="text-xs text-gray-500 mt-2">{inStock ? `${maxQty} available` : 'Out of stock'}</div>
+            <div className="flex items-center gap-2 mt-3">
+              <div className="flex items-center rounded-md border overflow-hidden">
+                <button
+                  type="button"
+                  aria-label="Decrease quantity"
+                  onClick={() => setQty((p) => Math.max(1, p - 1))}
+                  disabled={!inStock || qty <= 1}
+                  className="px-3 py-2 text-gray-700 disabled:opacity-40"
+                >
+                  −
+                </button>
+                <div className="px-3 py-2 w-10 text-center text-sm">{qty}</div>
+                <button
+                  type="button"
+                  aria-label="Increase quantity"
+                  onClick={() => setQty((p) => Math.min(maxQty, p + 1))}
+                  disabled={!inStock || qty >= maxQty}
+                  className="px-3 py-2 text-gray-700 disabled:opacity-40"
+                >
+                  +
+                </button>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleAdd}
+                disabled={!inStock || added}
+                className={`px-4 py-2 rounded-md text-white font-medium transition ${!inStock ? 'bg-gray-300 text-gray-700 cursor-not-allowed' : 'bg-purple-700 hover:bg-purple-800'} ${added ? 'opacity-70 cursor-default' : ''}`}
+              >
+                {added ? 'Added' : 'Add'}
+              </button>
+            </div>
           </div>
         </div>
       </div>
+
+      {/* Footer strip (rating) */}
+      <div className="border-t border-gray-100 px-4 py-3 bg-white text-sm text-gray-600 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Rating value={product.rating ?? 0} />
+          <span>{(product.reviews ?? 0)} reviews</span>
+        </div>
+        <div className="text-xs text-gray-400">{product.location}</div>
       </div>
-    </Link>
+    </article>
+  )
+}
+
+function Rating({ value = 0 }) {
+  const stars = Array.from({ length: 5 }, (_, i) => i + 1)
+  return (
+    <div className="flex items-center gap-1">
+      {stars.map((s) => (
+        <svg key={s} className={`w-4 h-4 ${s <= Math.round(value) ? 'text-yellow-400' : 'text-gray-200'}`} viewBox="0 0 20 20" fill="currentColor" aria-hidden>
+          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.945a1 1 0 00.95.69h4.15c.969 0 1.371 1.24.588 1.81l-3.36 2.44a1 1 0 00-.364 1.118l1.287 3.945c.3.921-.755 1.688-1.54 1.118l-3.36-2.44a1 1 0 00-1.176 0l-3.36 2.44c-.784.57-1.838-.197-1.539-1.118l1.287-3.945a1 1 0 00-.364-1.118L2.075 9.372c-.783-.57-.38-1.81.588-1.81h4.15a1 1 0 00.95-.69l1.286-3.945z" />
+        </svg>
+      ))}
+    </div>
   )
 }
 
