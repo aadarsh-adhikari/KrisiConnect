@@ -1,4 +1,7 @@
 import mongoose from "mongoose";
+// Ensure User model is registered before populates are performed
+import User from "./user";
+
 const productSchema = mongoose.Schema({
     name: { type: String, required: true },
     description: { type: String, required: true },

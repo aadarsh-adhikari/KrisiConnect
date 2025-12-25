@@ -2,6 +2,7 @@
 import { useState, useRef } from "react";
 import { FaTimes } from "react-icons/fa";
 import axios from "axios";
+import Image from 'next/image';
 
 const ProductForm = ({ onSave, initial, loading, onCancel }) => {
   const [form, setForm] = useState(
@@ -290,7 +291,7 @@ const ProductForm = ({ onSave, initial, loading, onCancel }) => {
               <div className="mt-4 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
                 {form.images.map((img, idx) => (
                   <div key={idx} className="relative rounded overflow-hidden bg-gray-100 h-24 w-full">
-                    <img src={img} className="w-full h-full object-cover" />
+                    <Image src={img} alt={`Preview ${idx + 1}`} fill className="object-cover" unoptimized />
                     <button type="button" onClick={() => handleImageRemove(img)} className="absolute top-1 right-1 bg-white/80 p-1 rounded-full hover:bg-white transition" aria-label="Remove image">
                       <FaTimes className="text-red-500" />
                     </button>
@@ -317,7 +318,7 @@ const ProductForm = ({ onSave, initial, loading, onCancel }) => {
 
         <div className="flex items-center justify-end gap-3 mt-6">
           <button type="button" onClick={() => { if (onCancel) onCancel(); }} className="px-4 py-2 border rounded-lg text-sm bg-white hover:bg-gray-50">Cancel</button>
-          <button type="submit" className="px-5 py-2 bg-gradient-to-r from-green-500 to-green-700 text-white rounded-lg shadow-md text-sm font-semibold transition disabled:opacity-50" disabled={loading || uploading}>
+          <button type="submit" className="px-5 py-2 bg-linear-to-r from-green-500 to-green-700 text-white rounded-lg shadow-md text-sm font-semibold transition disabled:opacity-50" disabled={loading || uploading}>
             {loading || uploading ? 'Saving...' : 'Save Product'}
           </button>
         </div>

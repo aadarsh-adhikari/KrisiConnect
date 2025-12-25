@@ -1,4 +1,4 @@
-import cloudinary from "@/lib/cloudinary";
+import cloudinary, { isCloudinaryConfigured } from "@/lib/cloudinary";
 import { NextResponse } from "next/server";
 import streamifier from "streamifier";
 
@@ -6,8 +6,8 @@ export const runtime = "nodejs";
 
 export async function POST(req) {
   try {
-    // Quick sanity check for Cloudinary config to produce a clearer error
-    if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
+    // Use the packaged config check so lowercase env keys are accepted
+    if (!isCloudinaryConfigured) {
       console.error('Cloudinary not configured: missing environment variables');
       return NextResponse.json({ message: 'Cloudinary credentials not configured on server' }, { status: 500 });
     }

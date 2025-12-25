@@ -1,4 +1,5 @@
 import Link from "next/link";
+import ContactSection from "../components/ContactSection";
 
 export default function About() {
   return (
@@ -6,35 +7,44 @@ export default function About() {
       <div className="container mx-auto px-6 md:px-12 max-w-6xl">
         <header className="text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-extrabold text-green-700">About KrisiConnect</h1>
-          <p className="mt-4 text-gray-600 max-w-2xl mx-auto">A simple marketplace that connects buyers and farmers directly — no middleman, fair prices, and fresher food for everyone.</p>
+          <p className="mt-4 text-gray-600 max-w-2xl mx-auto">A marketplace that connects buyers and farmers directly — fresher food, fairer prices, and stronger communities.</p>
         </header>
 
-        <section className="grid gap-8 md:grid-cols-2 items-start mb-12">
-          <div className="bg-green-50 p-8 rounded-lg shadow">
-            <h2 className="text-2xl font-bold text-green-800 mb-3">Our Mission</h2>
-            <p className="text-gray-700">We empower small and medium farmers to reach local buyers directly, enabling transparent pricing, sustainable practices, and stronger rural economies. By cutting out intermediaries, we help farmers keep a fairer share of revenue and provide buyers with fresher produce.</p>
+        <section className="grid gap-8 md:grid-cols-2 items-center mb-12">
+          <div>
+            <h2 className="text-3xl font-bold text-gray-800 mb-4">Our Mission</h2>
+            <p className="text-gray-700 mb-4">We empower small and medium farmers to reach local buyers directly, enabling transparent pricing, sustainable practices, and stronger rural economies. By cutting out intermediaries, farmers keep a fairer share of revenue and buyers get fresher produce.</p>
             <ul className="mt-4 list-disc list-inside text-gray-700 space-y-2">
               <li>Direct farmer-buyer connections</li>
               <li>Transparent pricing set by farmers</li>
               <li>Sustainable and seasonal produce</li>
             </ul>
-          </div>
-
-          <div className="p-8 rounded-lg">
-            <h3 className="text-xl font-semibold text-gray-800 mb-3">How it works</h3>
-            <ol className="space-y-4 text-gray-700">
-              <li>
-                <strong>Farmers list products:</strong> Farmers create listings with photos, quantity, and price — they control the price and availability.
-              </li>
-              <li>
-                <strong>Buyers browse & order:</strong> Buyers search nearby produce, compare, and order directly from the farmer's listing.
-              </li>
-              <li>
-                <strong>Local delivery or pickup:</strong> Delivery options are arranged by the farmer or processed locally for quick fulfillment.
-              </li>
-            </ol>
             <div className="mt-6">
               <Link href="/marketplace" className="bg-green-600 text-white px-4 py-2 rounded-lg font-semibold">Explore Marketplace</Link>
+            </div>
+          </div>
+
+          <div className="rounded-lg overflow-hidden shadow">
+            <div className="w-full h-64 bg-gray-100 flex items-center justify-center">
+              <img src="/logo/field-hero.jpg" alt="Farm field" className="w-full h-full object-cover" />
+            </div>
+          </div>
+        </section>
+
+        <section className="mb-12">
+          <h3 className="text-2xl font-bold text-gray-800 mb-4">How it works</h3>
+          <div className="grid gap-6 md:grid-cols-3">
+            <div className="bg-green-50 p-6 rounded-lg shadow">
+              <h4 className="font-semibold text-green-800">Farmers list products</h4>
+              <p className="text-gray-700 mt-2 text-sm">Farmers create listings with photos, quantity and price — they control availability and pricing.</p>
+            </div>
+            <div className="bg-white p-6 rounded-lg shadow">
+              <h4 className="font-semibold text-gray-800">Buyers browse & order</h4>
+              <p className="text-gray-700 mt-2 text-sm">Buyers search nearby produce, compare and order directly from the farmer's listing.</p>
+            </div>
+            <div className="bg-white p-6 rounded-lg shadow">
+              <h4 className="font-semibold text-gray-800">Local delivery or pickup</h4>
+              <p className="text-gray-700 mt-2 text-sm">Delivery options are arranged by the farmer or processed locally for quick fulfillment.</p>
             </div>
           </div>
         </section>
@@ -101,10 +111,9 @@ export default function About() {
           </div>
         </section>
 
-        <div className="text-center">
-          <Link href="/marketplace" className="inline-block bg-green-600 text-white px-6 py-3 rounded-lg font-semibold">Explore marketplace</Link>
-        </div>
       </div>
+
+      <ContactSection />
     </main>
   );
 }

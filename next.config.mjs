@@ -1,6 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  /* config options here */
+  reactStrictMode: true,
+  images: {
+    domains: ['res.cloudinary.com'],
+    formats: ['image/avif', 'image/webp'],
+  },
 };
 
 export default nextConfig;
