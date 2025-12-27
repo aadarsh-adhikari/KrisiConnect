@@ -2,19 +2,35 @@
 import { useState, useEffect } from "react";
 import { useAuthStore } from "@/app/store/authStore";
 import { useRouter } from "next/navigation";
-import { FaShoppingCart, FaHeart, FaBox, FaLeaf } from "react-icons/fa";
+import { FaShoppingCart, FaBox } from "react-icons/fa";
+import { useCartStore } from "@/app/store/cartStore";
 import Link from "next/link";
-import ProductCard from "@/app/components/ProductCard";
 
 const BuyerDashboard = () => {
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
   const router = useRouter();
+  const cartItems = useCartStore((s) => s.getTotalItems());
+  const cartTotal = useCartStore((s) => s.getTotalPrice());
+  const cartList = useCartStore((s) => s.items);
+  const removeItem = useCartStore((s) => s.removeItem);
+  const clearCart = useCartStore((s) => s.clear);
+  const updateQty = useCartStore((s) => s.updateQty);
+
   const [orders, setOrders] = useState([]);
-  const [favorites, setFavorites] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [placingItemId, setPlacingItemId] = useState(null);
+  const [placingAll, setPlacingAll] = useState(false);
+  const [cartOrderError, setCartOrderError] = useState('');
   const [loading, setLoading] = useState(true);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deleteError, setDeleteError] = useState("");
+
+  // confirm / cancel order states
+  const [confirmingId, setConfirmingId] = useState(null);
+  const [confirmError, setConfirmError] = useState("");
+  const [cancellingId, setCancellingId] = useState(null);
+  const [cancelError, setCancelError] = useState("");
 
   const handleDeleteAccount = async () => {
     if (!window.confirm("Are you sure? This will permanently delete your account.")) return;
@@ -51,38 +67,35 @@ const BuyerDashboard = () => {
     }
 
     fetchData();
-    fetchFavorites();
-
-    const onFavChange = () => fetchFavorites();
-    window.addEventListener("krisi:favorites:changed", onFavChange);
-    return () => window.removeEventListener("krisi:favorites:changed", onFavChange);
   }, [user, router]);
 
-  const fetchFavorites = async () => {
+  // fetch orders for this user
+  const fetchOrders = async () => {
     if (!user) return;
     try {
-      const res = await fetch(`/api/users/${user._id}/favorites`);
-      if (!res.ok) throw new Error("Failed to fetch favorites");
-      const serverFavs = await res.json();
-
-      // Merge local favorites (product ids stored locally) that may not be on server
-      let merged = serverFavs || [];
-      try {
-        const localIds = JSON.parse(localStorage.getItem("krisi_favs") || "[]");
-        const missing = (Array.isArray(localIds) ? localIds : []).filter((id) => !merged.find((p) => p._id === id));
-        if (missing.length > 0) {
-          const allRes = await fetch("/api/products");
-          if (allRes.ok) {
-            const all = await allRes.json();
-            const extra = all.filter((p) => missing.includes(p._id));
-            merged = [...merged, ...extra];
-          }
-        }
-      } catch (e) {
-        // ignore localStorage parse errors
+      const res = await fetch(`/api/orders?userId=${user._id}`);
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || 'Failed to fetch orders');
       }
+      const data = await res.json();
+      setOrders(Array.isArray(data) ? data : []);
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
-      setFavorites(merged);
+
+
+  const fetchProducts = async () => {
+    try {
+      const res = await fetch('/api/products');
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || 'Failed to fetch products');
+      }
+      const data = await res.json();
+      setProducts(Array.isArray(data) ? data : []);
     } catch (e) {
       console.error(e);
     }
@@ -91,8 +104,7 @@ const BuyerDashboard = () => {
   const fetchData = async () => {
     try {
       setLoading(true);
-      // TODO: Fetch user orders from backend
-      setOrders([]);
+      await Promise.all([fetchOrders(), fetchProducts()]);
     } catch (error) {
       console.error("Error fetching data", error);
     } finally {
@@ -102,8 +114,131 @@ const BuyerDashboard = () => {
 
   if (!user) return null;
 
+  // confirm order action
+  const confirmOrder = async (orderId) => {
+    if (!window.confirm('Confirm this order?')) return;
+    setConfirmError('');
+    setConfirmingId(orderId);
+
+    // optimistic UI update
+    const prev = orders;
+    setOrders((s) => s.map((o) => (o._id === orderId ? { ...o, status: 'delivered' } : o)));
+
+    try {
+      const res = await fetch(`/api/orders/${orderId}/confirm`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', 'x-requester-id': user._id },
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || 'Failed to confirm order');
+      }
+      const updated = await res.json();
+      setOrders((s) => s.map((o) => (o._id === orderId ? updated : o)));
+    } catch (e) {
+      setConfirmError(e.message);
+      // revert on error
+      setOrders(prev);
+    } finally {
+      setConfirmingId(null);
+    }
+  }
+
+  // cancel order action (buyer)
+  const cancelOrder = async (orderId) => {
+    if (!window.confirm('Cancel this order?')) return;
+    setCancelError('');
+    setCancellingId(orderId);
+
+    const prev = orders;
+    // optimistic remove for better UX
+    setOrders((s) => s.filter((o) => o._id !== orderId));
+
+    try {
+      const res = await fetch(`/api/orders/${orderId}/cancel`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', 'x-requester-id': user._id },
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || 'Failed to cancel order');
+      }
+      // success: order removed already
+    } catch (e) {
+      setCancelError(e.message);
+      setOrders(prev);
+    } finally {
+      setCancellingId(null);
+    }
+  }
+
+  // place order for a single cart item
+  const placeOrderItem = async (item) => {
+    setCartOrderError('');
+    setPlacingItemId(item.productId);
+    try {
+      const body = { productId: item.productId, quantity: Number(item.qty || 1) };
+      const res = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-requester-id': user._id },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || 'Failed to create order');
+      }
+      const order = await res.json();
+      setOrders((s) => [order, ...s]);
+
+      // update product stock locally if present
+      setProducts((ps) => ps.map((p) => (p._id === order.productId.toString() ? { ...p, quantity: Math.max(0, (p.quantity || 0) - order.quantity) } : p)));
+
+      // remove from cart
+      removeItem(item.productId);
+    } catch (e) {
+      setCartOrderError(e.message);
+    } finally {
+      setPlacingItemId(null);
+    }
+  }
+
+  // place orders for all cart items
+  const placeAllOrders = async () => {
+    if (!cartList || cartList.length === 0) return;
+    setCartOrderError('');
+    setPlacingAll(true);
+    const errors = [];
+    const created = [];
+    for (const item of cartList) {
+      try {
+        const body = { productId: item.productId, quantity: Number(item.qty || 1) };
+        const res = await fetch('/api/orders', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-requester-id': user._id },
+          body: JSON.stringify(body),
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          errors.push(err.message || 'Failed to create order');
+          continue;
+        }
+        const order = await res.json();
+        created.push(order);
+        // update product stock locally
+        setProducts((ps) => ps.map((p) => (p._id === order.productId.toString() ? { ...p, quantity: Math.max(0, (p.quantity || 0) - order.quantity) } : p)));
+      } catch (e) {
+        errors.push(e.message);
+      }
+    }
+
+    if (created.length > 0) setOrders((s) => [...created.reverse(), ...s]);
+    if (errors.length > 0) setCartOrderError(errors.join('; '));
+    else clearCart();
+    setPlacingAll(false);
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 p-6">
+    <div className="min-h-screen bg-linear-to-br from-green-50 to-blue-50 p-6">
       {/* Header */}
       <div className="mb-8 flex items-start justify-between gap-4">
         <div>
@@ -123,7 +258,7 @@ const BuyerDashboard = () => {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
         <div className="bg-white rounded-lg shadow p-6 border-l-4 border-green-500">
           <div className="flex items-center justify-between">
             <div>
@@ -133,33 +268,85 @@ const BuyerDashboard = () => {
             <FaBox className="text-4xl text-green-200" />
           </div>
         </div>
+
         <div className="bg-white rounded-lg shadow p-6 border-l-4 border-blue-500">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-500 text-sm">Cart Items</p>
-              <p className="text-3xl font-bold text-blue-700">0</p>
+              <p className="text-gray-500 text-sm">Cart</p>
+              <p className="text-3xl font-bold text-blue-700">{cartItems}</p>
+              <p className="text-sm text-gray-500 mt-1">Total: Rs. {cartTotal?.toLocaleString?.() ?? '0'}</p>
             </div>
             <FaShoppingCart className="text-4xl text-blue-200" />
           </div>
         </div>
-        <div className="bg-white rounded-lg shadow p-6 border-l-4 border-red-500">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-500 text-sm">Wishlist</p>
-              <p className="text-3xl font-bold text-red-700">0</p>
+      </div> 
+
+      {/* Cart Orders Section */}
+      <div className="bg-white rounded-lg shadow mb-6 p-6">
+        <h3 className="text-lg font-semibold mb-3">Cart Orders</h3>
+
+        {(!cartList || cartList.length === 0) ? (
+          <div className="text-gray-500">Your cart is empty.</div>
+        ) : (
+          <div className="space-y-3">
+            {cartList.map((item) => (
+              <div key={item.productId} className="flex items-center justify-between gap-4 border rounded p-3">
+                <div>
+                  <div className="font-semibold">{item.product?.name ?? item.productId}</div>
+                  <div className="text-sm text-gray-500">Unit: Rs. {item.product?.price?.toLocaleString?.() ?? item.product?.price}</div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <input
+                    type="number"
+                    className="border rounded px-2 py-1 w-20"
+                    min={1}
+                    value={item.qty}
+                    onChange={(e) => updateQty(item.productId, Number(e.target.value || 1))}
+                  />
+
+                  <div className="text-sm">Subtotal: Rs. {(Number(item.qty || 1) * (item.product?.price || 0)).toLocaleString()}</div>
+
+                  <button
+                    onClick={() => placeOrderItem(item)}
+                    disabled={placingItemId === item.productId}
+                    className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded"
+                  >
+                    {placingItemId === item.productId ? 'Placing...' : 'Place'}
+                  </button>
+
+                  <button
+                    onClick={() => removeItem(item.productId)}
+                    className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-3 py-1 rounded"
+                  >
+                    Remove
+                  </button>
+                </div>
+              </div>
+            ))}
+
+            <div className="flex items-center justify-between border-t pt-3">
+              <div className="text-sm text-gray-600">Total: Rs. {cartTotal?.toLocaleString?.() ?? '0'}</div>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={placeAllOrders}
+                  disabled={placingAll}
+                  className={`bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded ${placingAll ? 'opacity-60 cursor-not-allowed' : ''}`}
+                >
+                  {placingAll ? 'Placing All...' : 'Place All Orders'}
+                </button>
+                <button
+                  onClick={() => clearCart()}
+                  className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-3 py-2 rounded"
+                >
+                  Clear Cart
+                </button>
+              </div>
             </div>
-            <FaHeart className="text-4xl text-red-200" />
+
+            {cartOrderError && <div className="text-red-600 mt-2">{cartOrderError}</div>}
           </div>
-        </div>
-        <div className="bg-white rounded-lg shadow p-6 border-l-4 border-yellow-500">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-500 text-sm">Saved Items</p>
-              <p className="text-3xl font-bold text-yellow-700">{favorites.length}</p>
-            </div>
-            <FaLeaf className="text-4xl text-yellow-200" />
-          </div>
-        </div>
+        )}
       </div>
 
       {/* Orders Section */}
@@ -190,12 +377,38 @@ const BuyerDashboard = () => {
                       <div className="flex justify-between items-start">
                         <div>
                           <p className="font-semibold text-lg text-gray-800">Order #{order._id}</p>
-                          <p className="text-gray-500 text-sm">Date: {new Date(order.createdAt).toLocaleDateString()}</p>
+                          <p className="text-sm text-gray-600">Product: {products.find((p) => p._id === (order.productId?.toString?.() || order.productId))?.name ?? order.productId}</p>
+                          <p className="text-gray-500 text-sm">Qty: {order.quantity} · Date: {new Date(order.orderDate || order.createdAt).toLocaleDateString()}</p>
                         </div>
-                        <span className="bg-green-100 text-green-800 px-4 py-1 rounded-full text-sm font-semibold">
-                          {order.status || "Processing"}
-                        </span>
+
+                        <div className="flex items-center gap-3">
+                          <span className={`px-4 py-1 rounded-full text-sm font-semibold ${order.status === 'delivered' ? 'bg-green-100 text-green-800' : order.status === 'shipped' ? 'bg-blue-100 text-blue-800' : order.status === 'cancelled' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'}`}>
+                            {order.status || "Processing"}
+                          </span>
+
+                          {order.status === 'shipped' && (
+                            <button
+                              onClick={(e) => { e.stopPropagation(); confirmOrder(order._id); }}
+                              disabled={confirmingId === order._id}
+                              className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded"
+                            >
+                              {confirmingId === order._id ? 'Confirming...' : 'Confirm'}
+                            </button>
+                          )}
+
+                          {order.status === 'pending' && (
+                            <button
+                              onClick={(e) => { e.stopPropagation(); cancelOrder(order._id); }}
+                              disabled={cancellingId === order._id}
+                              className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded"
+                            >
+                              {cancellingId === order._id ? 'Cancelling...' : 'Cancel'}
+                            </button>
+                          )}
+                        </div>
                       </div>
+
+                      {confirmError && confirmingId === order._id && <div className="text-red-600 mt-2">{confirmError}</div>}
                     </div>
                   ))}
                 </div>
@@ -205,38 +418,7 @@ const BuyerDashboard = () => {
         </div>
       </div>
 
-      {/* Favorites Section */}
-      <div className="bg-white rounded-lg shadow mb-6">
-        <div className="border-b p-6">
-          <h2 className="text-2xl font-bold text-yellow-700">
-            <FaHeart className="inline mr-2 text-red-600" /> Saved Items
-          </h2>
-        </div>
-        <div className="p-6">
-          {favorites.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-gray-500">You haven't saved any products yet.</p>
-              <Link href="/marketplace" className="inline-block bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-semibold mt-4">Browse Marketplace</Link>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {favorites.map((p) => (
-                <ProductCard
-                  key={p._id}
-                  product={p}
-                  onToggleFavorite={(id, favs) => {
-                    // if user unfavorited, remove from favorites list
-                    const me = user._id?.toString();
-                    const stillFavorited = (favs || []).find((u) => u.toString() === me);
-                    if (!stillFavorited) setFavorites((prev) => prev.filter((x) => x._id !== id));
-                    else setFavorites((prev) => prev.map((x) => (x._id === id ? { ...x, favorites: favs } : x)));
-                  }}
-                />
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
+
     </div>
   );
 };

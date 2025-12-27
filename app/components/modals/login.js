@@ -112,7 +112,7 @@ const LoginModal = ({ isOpen, onClose, onSwitchToSignup }) => {
           <button
             type="submit"
             disabled={loading}
-            className={`w-full py-2 px-4 bg-gradient-to-r from-green-500 to-green-700 text-white font-bold rounded-lg shadow-md transition duration-200 text-lg tracking-wide ${
+            className={`w-full py-2 px-4 bg-linear-to-r from-green-500 to-green-700 text-white font-bold rounded-lg shadow-md transition duration-200 text-lg tracking-wide ${
               loading
                 ? "opacity-50 cursor-not-allowed"
                 : "hover:from-green-600 hover:to-green-800"
