@@ -9,10 +9,10 @@ export default function Marketplace() {
   const [loading, setLoading] = useState(true)
   const [query, setQuery] = useState("")
   const [category, setCategory] = useState("")
+  const [categories, setCategories] = useState([])
   const [minPrice, setMinPrice] = useState("")
   const [maxPrice, setMaxPrice] = useState("")
   const [sortBy, setSortBy] = useState("")
-  const [ratingFilter, setRatingFilter] = useState(0)
   const [locations, setLocations] = useState([])
   const [selectedLocations, setSelectedLocations] = useState(new Set())
 
@@ -21,10 +21,12 @@ export default function Marketplace() {
   }, [])
 
   useEffect(() => {
-    // derive locations from loaded products
+    // derive locations and categories from loaded products
     if (products.length) {
       const locs = Array.from(new Set(products.map((p) => p.location).filter(Boolean)))
       setLocations(locs)
+      const cats = Array.from(new Set(products.map((p) => p.category).filter(Boolean)))
+      setCategories(cats)
     }
   }, [products])
 
@@ -69,7 +71,7 @@ export default function Marketplace() {
       if (category && p.category !== category) return false
       if (minPrice && Number(p.price) < Number(minPrice)) return false
       if (maxPrice && Number(p.price) > Number(maxPrice)) return false
-      if (ratingFilter && Math.round(p.rating ?? 0) < ratingFilter) return false
+
       if (selectedLocations.size && !selectedLocations.has(p.location)) return false
       return true
     })
@@ -116,7 +118,7 @@ export default function Marketplace() {
       </div>
 
       {/* Main content */}
-      <div className="container mx-auto px-6 md:px-12 max-w-6xl py-8">
+      <div className="container mx-auto px-6 max-w-8xl py-4">
         <div className="flex flex-col md:flex-row gap-6">
           {/* Sidebar */}
           <aside className="w-full md:w-64 bg-white rounded-lg p-4 shadow">
@@ -140,17 +142,14 @@ export default function Marketplace() {
             </div>
 
             <div className="mb-4">
-              <label className="text-sm font-medium text-gray-700">Rating</label>
-              <div className="mt-2 flex flex-col gap-2 text-sm text-gray-600">
-                {[5,4,3,2,1].map((r) => (
-                  <label key={r} className="inline-flex items-center gap-2">
-                    <input type="radio" name="rating" checked={ratingFilter === r} onChange={() => setRatingFilter(r)} className="accent-green-600" />
-                    <span className="flex items-center gap-1">
-                      {Array.from({length:r}).map((_,i)=> <svg key={i} className="w-4 h-4 text-yellow-400" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.945a1 1 0 00.95.69h4.15c.969 0 1.371 1.24.588 1.81l-3.36 2.44a1 1 0 00-.364 1.118l1.287 3.945c.3.921-.755 1.688-1.54 1.118l-3.36-2.44a1 1 0 00-1.176 0l-3.36 2.44c-.784.57-1.838-.197-1.539-1.118l1.287-3.945a1 1 0 00-.364-1.118L2.075 9.372c-.783-.57-.38-1.81.588-1.81h4.15a1 1 0 00.95-.69l1.286-3.945z"/></svg>)}
-                      <span className="text-xs text-gray-500">+ stars</span>
-                    </span>
-                  </label>
-                ))}
+              <label className="text-sm font-medium text-gray-700">Category</label>
+              <div className="mt-2">
+                <select value={category} onChange={(e) => setCategory(e.target.value)} className="w-full px-3 py-2 border rounded">
+                  <option value="">All</option>
+                  {categories.map((c) => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
               </div>
             </div>
 
@@ -185,7 +184,7 @@ export default function Marketplace() {
                 {Array.from({ length: 8 }).map((_, i) => <div key={i} className="h-64 bg-white rounded-lg shadow animate-pulse" />)}
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-6 items-stretch">
                 {filtered.map((p) => (
                   <ProductCard key={p._id} product={p} />
                 ))}

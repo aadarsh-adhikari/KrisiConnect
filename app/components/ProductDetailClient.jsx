@@ -42,13 +42,11 @@ const ProductDetailClient = ({ product }) => {
   const next = () => setIndex((i) => (i + 1) % images.length);
 
   const addItem = useCartStore((s) => s.addItem);
-  const [added, setAdded] = React.useState(false);
+  const inCart = useCartStore((s) => s.items.some((i) => i.productId === product._id));
 
   const handleAddToCart = () => {
     if (!product) return;
     addItem(product, 1);
-    setAdded(true);
-    setTimeout(() => setAdded(false), 1400);
   };
 
   return (
@@ -111,7 +109,12 @@ const ProductDetailClient = ({ product }) => {
           <div className="mt-6 flex flex-col gap-3">
             {/* Contact: WhatsApp if phone available; fallback to email */}
             <ContactSellerButton product={product} />
-            <button onClick={handleAddToCart} className={`border px-4 py-2 rounded ${added ? 'bg-green-50 text-green-700 cursor-default' : 'text-gray-700 hover:bg-gray-100'}`}>{added ? 'Added' : 'Add to Cart'}</button>
+            <button
+              onClick={() => { if (inCart) router.push('/cart'); else handleAddToCart(); }}
+              className={`w-full py-3 rounded-lg text-white font-semibold transition focus:outline-none ${inCart ? 'bg-green-600' : 'bg-linear-to-r from-blue-500 to-blue-400 hover:from-blue-600 hover:to-blue-500 shadow-md'}`}
+            >
+              {inCart ? 'View Cart' : 'Add to Cart'}
+            </button>
           </div>
 
           <div className="mt-6 text-sm text-gray-500">

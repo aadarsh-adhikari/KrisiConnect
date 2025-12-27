@@ -85,29 +85,20 @@ export default function About() {
           </div>
         </section>
 
-        <section className="mb-12">
+        <section className="mb-12 flex justify-center flex-col items-center">
           <h3 className="text-2xl font-bold text-gray-800 mb-4">Meet the team</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 gap-6">
             <div className="bg-white p-4 rounded-lg shadow text-center">
               <div className="w-20 h-20 bg-gray-200 rounded-full mx-auto mb-3" />
-              <p className="font-semibold">Asha Patel</p>
+              <p className="font-semibold">Aadarsh Adhikari</p>
               <p className="text-sm text-gray-500">Founder</p>
             </div>
             <div className="bg-white p-4 rounded-lg shadow text-center">
               <div className="w-20 h-20 bg-gray-200 rounded-full mx-auto mb-3" />
-              <p className="font-semibold">Rahul Verma</p>
-              <p className="text-sm text-gray-500">Product</p>
+              <p className="font-semibold">Bikesh Gautam</p>
+              <p className="text-sm text-gray-500">Founder</p>
             </div>
-            <div className="bg-white p-4 rounded-lg shadow text-center">
-              <div className="w-20 h-20 bg-gray-200 rounded-full mx-auto mb-3" />
-              <p className="font-semibold">Neha Singh</p>
-              <p className="text-sm text-gray-500">Operations</p>
-            </div>
-            <div className="bg-white p-4 rounded-lg shadow text-center">
-              <div className="w-20 h-20 bg-gray-200 rounded-full mx-auto mb-3" />
-              <p className="font-semibold">Vikram Rao</p>
-              <p className="text-sm text-gray-500">Community</p>
-            </div>
+            
           </div>
         </section>
 

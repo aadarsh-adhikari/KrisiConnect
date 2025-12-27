@@ -78,7 +78,7 @@ const SignupModal = ({ isOpen, onClose, onSwitchToLogin }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-60 p-4 overflow-auto min-h-screen overflow-auto scrollbar-hide">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-60 p-4 overflow-auto min-h-screen scrollbar-hide">
       <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl p-6 relative flex flex-col items-center m-4 max-h-[98vh] ">
         <button
           onClick={handleClose}
@@ -194,7 +194,7 @@ const SignupModal = ({ isOpen, onClose, onSwitchToLogin }) => {
           <button
             type="submit"
             disabled={loading}
-            className={`w-full py-2 px-4 bg-gradient-to-r from-green-500 to-green-700 text-white font-bold rounded-lg shadow-md transition duration-200 text-lg tracking-wide ${
+            className={`w-full py-2 px-4 bg-linear-to-r from-green-500 to-green-700 text-white font-bold rounded-lg shadow-md transition duration-200 text-lg tracking-wide ${
               loading
                 ? "opacity-50 cursor-not-allowed"
                 : "hover:from-green-600 hover:to-green-800"
