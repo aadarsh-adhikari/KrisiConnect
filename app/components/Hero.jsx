@@ -7,18 +7,26 @@ import { useAuthStore } from "../store/authStore";
 import LoginModal from "./modals/login";
 
 import Image from "next/image";
+import { useRouter } from 'next/navigation';
 export default function Hero() {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [infoMsg, setInfoMsg] = useState('');
   const user = useAuthStore((s) => s.user);
+  const router = useRouter();
 
   const handleFarmerClick = (e) => {
     e.preventDefault();
-    if (!user) setIsLoginOpen(true);
-    else {
-      setInfoMsg(`You are already logged in as ${user.role}`);
-      setTimeout(() => setInfoMsg(''), 3000);
+    if (!user) {
+      setIsLoginOpen(true);
+      return;
     }
+    if (user.role === 'farmer') {
+      router.push('/dashboard/farmer');
+      return;
+    }
+
+    setInfoMsg(`You are already logged in as ${user.role}`);
+    setTimeout(() => setInfoMsg(''), 3000);
   };
 
   return (

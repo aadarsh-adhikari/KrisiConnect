@@ -2,8 +2,8 @@
 import React, { useState } from 'react';
 import { FaPlusCircle } from "react-icons/fa";
 import { useAuthStore } from "../store/authStore";
-import LoginModal from "./modals/login";
 import { useRouter } from 'next/navigation';
+import LoginModal from "./modals/login";
 
 export default function FarmerCTA() {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
@@ -13,8 +13,16 @@ export default function FarmerCTA() {
 
   const handleStartSelling = (e) => {
     e.preventDefault();
-    if (!user) { setIsLoginOpen(true); return; }
-    if (user.role === 'farmer') { router.push('/dashboard/farmer'); return; }
+    if (!user) {
+      setIsLoginOpen(true);
+      return;
+    }
+
+    if (user.role === 'farmer') {
+      router.push('/dashboard/farmer');
+      return;
+    }
+
     setInfoMsg(`You are already logged in as ${user.role}`);
     setTimeout(() => setInfoMsg(''), 3000);
   };
