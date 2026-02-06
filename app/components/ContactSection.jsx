@@ -18,17 +18,17 @@ export default function ContactSection() {
   };
 
   return (
-    <section className="min-h-screen bg-black text-white flex items-center justify-center px-6">
-      <div className="max-w-6xl w-full grid grid-cols-1 md:grid-cols-2 gap-16">
+    <section className="min-h-screen px-6 bg-[color:var(--background)] text-[color:var(--foreground)]">
+      <div className="max-w-6xl w-full mx-auto grid grid-cols-1 md:grid-cols-2 gap-16 items-center py-16">
         
         {/* Left: Form */}
-        <form onSubmit={sendMail} className="space-y-8">
+        <form onSubmit={sendMail} className="space-y-8 bg-[color:var(--card)] border border-[color:var(--border)] rounded-lg p-8 shadow">
           <div>
             <input
               name="name"
               type="text"
               placeholder="Your Name"
-              className="w-full bg-transparent border-b border-gray-500 py-3 text-sm focus:outline-none focus:border-white"
+              className="w-full bg-transparent border-b border-[color:var(--border)] py-3 text-sm placeholder:text-[color:var(--muted)] focus:outline-none focus:border-[color:var(--accent)]"
             />
           </div>
 
@@ -37,7 +37,7 @@ export default function ContactSection() {
               name="email"
               type="email"
               placeholder="Your Email"
-              className="w-full bg-transparent border-b border-gray-500 py-3 text-sm focus:outline-none focus:border-white"
+              className="w-full bg-transparent border-b border-[color:var(--border)] py-3 text-sm placeholder:text-[color:var(--muted)] focus:outline-none focus:border-[color:var(--accent)]"
             />
           </div>
 
@@ -46,27 +46,27 @@ export default function ContactSection() {
               name="message"
               placeholder="Share your thoughts"
               rows="4"
-              className="w-full bg-transparent border-b border-gray-500 py-3 text-sm resize-none focus:outline-none focus:border-white"
+              className="w-full bg-transparent border-b border-[color:var(--border)] py-3 text-sm resize-none placeholder:text-[color:var(--muted)] focus:outline-none focus:border-[color:var(--accent)]"
             />
           </div>
 
-          <button type="submit" className="relative inline-block bg-white text-black text-xs font-medium px-10 py-4 tracking-wide hover:bg-gray-200 transition">
+          <button type="submit" className="relative inline-flex items-center justify-center bg-[color:var(--accent)] text-white text-sm font-semibold px-8 py-3 rounded-md tracking-wide hover:opacity-95 transition">
             SHARE YOUR FEEDBACK
           </button>
         </form>
 
         {/* Right: Text */}
         <div className="relative flex items-center">
-          <div className="absolute -inset-6 border border-gray-700 rounded-[50%] opacity-40"></div>
+          <div className="absolute -inset-6 border border-[color:var(--border)] rounded-[50%] opacity-20"></div>
 
           <div className="relative">
-            <h2 className="text-5xl font-serif leading-tight">
+            <h2 className="text-5xl font-serif leading-tight text-[color:var(--foreground)]">
               Contact <br />
-              <span className="inline-block mt-2 border-t border-white w-16"></span>
+              <span className="inline-block mt-2 border-t border-[color:var(--accent)] w-16"></span>
               <span className="block mt-4">Us</span>
             </h2>
 
-            <p className="mt-6 text-sm text-gray-400 max-w-sm">
+            <p className="mt-6 text-sm text-[color:var(--muted)] max-w-sm">
               It is very important for us to keep in touch with you,
               so we are always ready to answer any question that
               interests you. Shoot!

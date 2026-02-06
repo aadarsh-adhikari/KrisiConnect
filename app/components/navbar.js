@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useAuthStore } from "../store/authStore";
 import LoginModal from "./modals/login";
 import SignupModal from "./modals/signup";
-import { FaUserCircle, FaBars, FaTimes, FaShoppingCart } from "react-icons/fa";
+import { FaUserCircle, FaBars, FaTimes, FaShoppingCart, FaMoon, FaSun } from "react-icons/fa";
 import Image from "next/image";
 import { useCartStore } from "../store/cartStore";
 const Navbar = () => {
@@ -14,6 +14,15 @@ const Navbar = () => {
   const [showSignupModal, setShowSignupModal] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [theme, setTheme] = useState(() => {
+    // Initialize from localStorage or system preference lazily to avoid setState in an effect
+    if (typeof window === "undefined") return "light";
+    const stored = localStorage.getItem("theme");
+    if (stored) return stored;
+    const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+    return prefersDark ? "dark" : "light";
+  });
+  const [mounted, setMounted] = useState(false);
   const dropdownRef = useRef(null);
   const mobileMenuRef = useRef(null);
   const totalItems = useCartStore((s) => s.items.reduce((acc, i) => acc + (i.qty || 0), 0));
@@ -24,6 +33,12 @@ const Navbar = () => {
     if (storedUser) {
       useAuthStore.getState().setUser(JSON.parse(storedUser));
     }
+  }, []);
+
+  useEffect(() => {
+    // Mark mount so theme-sensitive UI won't cause hydration mismatches
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setMounted(true);
   }, []);
 
   useEffect(() => {
@@ -38,6 +53,20 @@ const Navbar = () => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    // Apply theme to document and persist
+    if (typeof window === "undefined") return;
+    const root = document.documentElement;
+    if (theme === "dark") {
+      root.classList.add("dark");
+      root.setAttribute("data-theme", "dark");
+    } else {
+      root.classList.remove("dark");
+      root.setAttribute("data-theme", "light");
+    }
+    localStorage.setItem("theme", theme);
+  }, [theme]);
 
   const handleLogout = () => {
     logout();
@@ -55,7 +84,7 @@ const Navbar = () => {
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 flex justify-between items-center px-4 sm:px-6 h-20 bg-white/90 backdrop-blur-sm shadow-md border-b border-gray-100">
+    <header className="fixed top-0 left-0 right-0 z-50 flex justify-between items-center px-4 sm:px-6 h-20 bg-[#354b7e] backdrop-blur-sm shadow-md border-b border-gray-100 dark:border-gray-800">
       <div className="flex items-center gap-3">
         <Link href="/" className="flex items-center gap-3">
           <div className="h-10 w-auto flex items-center">
@@ -70,27 +99,27 @@ const Navbar = () => {
         </Link>
       </div>
 
-      <nav className="space-x-6 hidden md:flex text-base font-medium">
-        <Link href="/" className="hover:text-green-600 transition-colors">
+      <nav className="space-x-6 hidden md:flex text-base font-medium text-white">
+        <Link href="/" className="text-white hover:text-green-300 hover:underline transition-colors">
           Home
         </Link>
-        <Link href="/marketplace" className="hover:text-green-600 transition-colors">
+        <Link href="/marketplace" className="text-white hover:text-green-300 hover:underline transition-colors">
           Marketplace
         </Link>
-        <Link href="/farmers" className="hover:text-green-600 transition-colors">
+        {/* <Link href="/farmers" className="text-white hover:text-green-300 hover:underline transition-colors">
           Farmers
-        </Link>
-        <Link href="/about" className="hover:text-green-600 transition-colors">
+        </Link> */}
+        <Link href="/about" className="text-white hover:text-green-300 hover:underline transition-colors">
           About
         </Link>
-        <Link href="/contact" className="hover:text-green-600 transition-colors">
+        <Link href="/contact" className="text-white hover:text-green-300 hover:underline transition-colors">
           Contact
         </Link>
       </nav>
 
       <div className="hidden md:flex items-center gap-3">
-        <Link href="/cart" className="relative inline-flex items-center p-2 hover:text-green-600">
-          <FaShoppingCart className="text-2xl text-green-600" />
+        <Link href="/cart" className="relative inline-flex items-center p-2 text-white hover:text-green-300">
+          <FaShoppingCart className="text-2xl text-white" />
           {totalItems > 0 && (
             <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">{totalItems}</span>
           )}
@@ -101,18 +130,18 @@ const Navbar = () => {
               onClick={() => setShowDropdown(!showDropdown)}
               className="flex items-center gap-2 hover:text-green-600 focus:outline-none"
             >
-              <FaUserCircle className="text-3xl text-green-600" />
-              <span className="font-medium text-green-700">{user.name}</span>
+              <FaUserCircle className="text-3xl text-white" />
+              <span className="font-medium text-white">{user.name}</span>
             </button>
             {showDropdown && (
-              <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
+              <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-2 z-50">
                 <Link
                   href={
                     user.role === "farmer"
                       ? "/dashboard/farmer"
                       : "/dashboard/buyer"
                   }
-                  className="block px-4 py-2 text-gray-800 hover:bg-green-50 hover:text-green-600"
+                  className="block px-4 py-2 text-gray-800 dark:text-gray-200 hover:bg-green-50 dark:hover:bg-green-900 hover:text-green-600 dark:hover:text-green-400"
                   onClick={() => setShowDropdown(false)}
                 >
                   Dashboard
@@ -122,7 +151,7 @@ const Navbar = () => {
                     handleLogout();
                     setShowDropdown(false);
                   }}
-                  className="w-full text-left px-4 py-2 text-gray-800 hover:bg-red-50 hover:text-red-600"
+                  className="w-full text-left px-4 py-2 text-gray-800 dark:text-gray-200 hover:bg-red-50 dark:hover:bg-red-900 hover:text-red-600 dark:hover:text-red-400"
                 >
                   Logout
                 </button>
@@ -133,7 +162,7 @@ const Navbar = () => {
           <>
             <button
               onClick={() => setShowLoginModal(true)}
-              className="text-green-700 hover:text-green-800 px-3 py-1 rounded-md transition"
+              className="text-white hover:text-green-300 px-3 py-1 rounded-md transition"
             >
               Login
             </button>
@@ -145,6 +174,23 @@ const Navbar = () => {
             </button>
           </>
         )}
+
+        {/* Theme toggle */}
+        {/* <button
+          onClick={() => setTheme((t) => (t === "dark" ? "light" : "dark"))}
+          aria-label="Toggle theme"
+          className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+        >
+          {mounted ? (
+            theme === "dark" ? (
+              <FaSun className="text-yellow-400 text-xl" />
+            ) : (
+              <FaMoon className="text-gray-700 dark:text-gray-200 text-xl" />
+            )
+          ) : (
+            <span className="w-5 h-5 inline-block" aria-hidden="true" />
+          )}
+        </button> */}
       </div>
 
       {/* Mobile menu button */}
@@ -153,12 +199,12 @@ const Navbar = () => {
           onClick={() => setShowMobileMenu((v) => !v)}
           aria-label={showMobileMenu ? "Close menu" : "Open menu"}
           aria-expanded={showMobileMenu}
-          className="p-2 rounded-md hover:bg-gray-100 focus:outline-none"
+          className="p-2 rounded-md hover:bg-white/10 focus:outline-none text-white"
         >
           {showMobileMenu ? (
-            <FaTimes className="text-2xl text-green-600" />
+            <FaTimes className="text-2xl text-white" />
           ) : (
-            <FaBars className="text-2xl text-green-600" />
+            <FaBars className="text-2xl text-white" />
           )}
         </button>
       </div>
@@ -166,16 +212,16 @@ const Navbar = () => {
       {/* Mobile menu overlay */}
       {showMobileMenu && (
         <div className="md:hidden fixed inset-0 z-40" onClick={() => setShowMobileMenu(false)}>
-          <div ref={mobileMenuRef} className="absolute top-20 left-4 right-4 bg-white rounded-lg shadow-lg p-4" onClick={(e) => e.stopPropagation()}>
-           
+          <div ref={mobileMenuRef} className="absolute top-20 left-4 right-4 bg-slate-900/95 text-white rounded-lg shadow-lg p-4 backdrop-blur" onClick={(e) => e.stopPropagation()}>
+
 
             <nav className="flex flex-col gap-3">
-              <Link href="/" onClick={() => setShowMobileMenu(false)} className="py-2 px-3 rounded hover:bg-gray-50">Home</Link>
-              <Link href="/marketplace" onClick={() => setShowMobileMenu(false)} className="py-2 px-3 rounded hover:bg-gray-50">Marketplace</Link>
-              <Link href="/farmers" onClick={() => setShowMobileMenu(false)} className="py-2 px-3 rounded hover:bg-gray-50">Farmers</Link>
-              <Link href="/about" onClick={() => setShowMobileMenu(false)} className="py-2 px-3 rounded hover:bg-gray-50">About</Link>
-              <Link href="/cart" onClick={() => setShowMobileMenu(false)} className="py-2 px-3 rounded hover:bg-gray-50">Cart {totalItems > 0 && (<span className="ml-2 inline-block bg-red-500 text-white text-xs rounded-full w-5 h-5 text-center">{totalItems}</span>)}</Link>
-              <Link href="/contact" onClick={() => setShowMobileMenu(false)} className="py-2 px-3 rounded hover:bg-gray-50">Contact</Link>
+              <Link href="/" onClick={() => setShowMobileMenu(false)} className="py-2 px-3 rounded text-white hover:bg-white/10">Home</Link>
+              <Link href="/marketplace" onClick={() => setShowMobileMenu(false)} className="py-2 px-3 rounded text-white hover:bg-white/10">Marketplace</Link>
+              {/* <Link href="/farmers" onClick={() => setShowMobileMenu(false)} className="py-2 px-3 rounded text-white hover:bg-white/10">Farmers</Link> */}
+              <Link href="/about" onClick={() => setShowMobileMenu(false)} className="py-2 px-3 rounded text-white hover:bg-white/10">About</Link>
+              <Link href="/cart" onClick={() => setShowMobileMenu(false)} className="py-2 px-3 rounded text-white hover:bg-white/10">Cart {totalItems > 0 && (<span className="ml-2 inline-block bg-red-500 text-white text-xs rounded-full w-5 h-5 text-center">{totalItems}</span>)}</Link>
+              <Link href="/contact" onClick={() => setShowMobileMenu(false)} className="py-2 px-3 rounded text-white hover:bg-white/10">Contact</Link>
             </nav>
 
             <div className="mt-4">
