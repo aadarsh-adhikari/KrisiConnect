@@ -4,6 +4,7 @@ import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "../store/authStore";
 import { useCartStore } from "../store/cartStore";
+import ProductCard from "./ProductCard";
 
 const formatDate = (iso) => {
   if (!iso) return "";
@@ -21,6 +22,8 @@ const formatDate = (iso) => {
 
 const ProductDetailClient = ({ product }) => {
   const [index, setIndex] = useState(0);
+  const [suggestions, setSuggestions] = useState([]);
+  const [suggestionsLoading, setSuggestionsLoading] = useState(true);
   const images = (product.images || []).slice(0, 7);
   const router = useRouter();
   const mainRef = useRef(null);
@@ -48,6 +51,30 @@ const ProductDetailClient = ({ product }) => {
     if (!product) return;
     addItem(product, 1);
   };
+
+  useEffect(() => {
+    let isActive = true;
+    const loadSuggestions = async () => {
+      setSuggestionsLoading(true);
+      try {
+        const res = await fetch("/api/products");
+        if (!res.ok) throw new Error("Failed to load");
+        const data = await res.json();
+        const filtered = (data || []).filter((p) => p._id !== product._id);
+        const sameCategory = filtered.filter((p) => p.category === product.category);
+        const picked = (sameCategory.length ? sameCategory : filtered).slice(0, 4);
+        if (isActive) setSuggestions(picked);
+      } catch (e) {
+        if (isActive) setSuggestions([]);
+      } finally {
+        if (isActive) setSuggestionsLoading(false);
+      }
+    };
+    loadSuggestions();
+    return () => {
+      isActive = false;
+    };
+  }, [product._id, product.category]);
 
   return (
     <div className="bg-white rounded-xl shadow p-6">
@@ -126,7 +153,34 @@ const ProductDetailClient = ({ product }) => {
 
       {/* Back to marketplace */}
       <div className="mt-6">
-        <button onClick={() => router.push('/marketplace')} className="text-sm text-green-700 hover:underline">← Back to Marketplace</button>
+        <button onClick={() => router.push('/marketplace')} className="text-sm text-gray-700 hover:text-gray-900">← Back to Marketplace</button>
+      </div>
+
+      {/* Suggestions */}
+      <div className="mt-10">
+        <div className="flex items-end justify-between">
+          <div>
+            <h2 className="text-lg font-semibold text-gray-900">More products you may like</h2>
+            <p className="text-sm text-gray-500">Hand-picked from the marketplace</p>
+          </div>
+          <button onClick={() => router.push('/marketplace')} className="text-sm text-gray-700 hover:text-gray-900 hover:underline">View all</button>
+        </div>
+
+        {suggestionsLoading ? (
+          <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="h-64 bg-gray-50 border border-gray-100 rounded-xl animate-pulse" />
+            ))}
+          </div>
+        ) : suggestions.length ? (
+          <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {suggestions.map((p) => (
+              <ProductCard key={p._id} product={p} />
+            ))}
+          </div>
+        ) : (
+          <div className="mt-4 text-sm text-gray-500">No suggestions available right now.</div>
+        )}
       </div>
     </div>
   );
