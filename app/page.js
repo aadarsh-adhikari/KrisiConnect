@@ -19,7 +19,7 @@ export default async function Home() {
       <Features />
       <MarketplacePreview products={products} />
       <FarmerCTA />
-      <Footer />
+    
     </main>
   );
 }
