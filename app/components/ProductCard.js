@@ -50,9 +50,9 @@ const ProductCard = ({ product, onAddToCart }) => {
 
   return (
     <Link href={`/product/${product._id}`} className="block" aria-label={`View details for ${product.name}`}>
-      <article className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden w-full h-full flex flex-col transform transition-transform duration-200 hover:scale-105 cursor-pointer">
+      <article className="bg-white rounded-2xl shadow-lg border border-gray-300 overflow-hidden w-full h-full flex flex-col transform transition-transform duration-200 hover:scale-105 cursor-pointer">
         {/* Image */}
-        <div className="relative w-full h-64 md:h-40 lg:h-50 bg-white shrink-0">
+        <div className="relative w-full h-48 md:h-36 lg:h-44 bg-white shrink-0">
           <div className="w-full h-full relative z-0">
           {product.images && product.images.length > 0 ? (
             <Image
@@ -71,24 +71,24 @@ const ProductCard = ({ product, onAddToCart }) => {
       </div>
 
       {/* Content */}
-      <div className="p-5 flex-1 flex flex-col">
-        <div className="flex items-center justify-between gap-4">
-          <h3 className="text-2xl font-semibold text-gray-900">{product.name}</h3>
-          <div className="text-2xl font-bold text-green-600">{typeof product.price === 'number' ? `Rs. ${product.price.toLocaleString()}` : product.price}</div>
+      <div className="p-4 flex-1 flex flex-col">
+        <div className="flex items-center justify-between gap-3">
+          <h3 className="text-lg font-semibold text-gray-900">{product.name}</h3>
+          <div className="text-lg font-bold text-green-600">{typeof product.price === 'number' ? `Rs. ${product.price.toLocaleString()}` : product.price}</div>
         </div>
 
         <div className="mt-3 flex items-center gap-2">
          
-          <span className="text-xs font-medium px-3 py-1 border rounded-full bg-white text-gray-700">{product.category}</span>
+          <span className="text-xs font-medium px-2 py-0.5 border rounded-full bg-white text-gray-700">{product.category}</span>
         </div>
 
-        <p className="text-sm text-gray-600 mt-4 line-clamp-3">{product.description}</p>
+        <p className="text-xs text-gray-600 mt-3 line-clamp-3">{product.description}</p>
 
         <div className="mt-5 flex items-center gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center text-xl">👨‍🌾</div>
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center text-lg">👨‍🌾</div>
             <div>
-              <div className="text-gray-800 font-medium">{product.sellerName ?? product.farmer ?? (product.sellerId && typeof product.sellerId === 'object' ? product.sellerId.name : product.sellerId) ?? 'Seller'}</div>
+              <div className="text-sm font-medium text-gray-800">{product.sellerName ?? product.farmer ?? (product.sellerId && typeof product.sellerId === 'object' ? product.sellerId.name : product.sellerId) ?? 'Seller'}</div>
               <div className="text-xs text-gray-400">Added: {createdAt}</div>
             </div>
           </div>
@@ -96,18 +96,18 @@ const ProductCard = ({ product, onAddToCart }) => {
           <div className="ml-auto flex items-center gap-3">
            
 
-            <div className="text-sm text-gray-500">{inStock ? `${maxQty} quantity` : 'Out of stock'}</div>
+            <div className="text-xs text-gray-500">{inStock ? `${maxQty} quantity` : 'Out of stock'}</div>
           </div>
         </div>
       </div>
 
       {/* Add to cart full width button */}
-      <div className="px-5 pb-5 mt-auto ">
+      <div className="px-4 pb-4 mt-auto ">
         <button
           type="button"
           onClick={(e) => { e.stopPropagation(); handleAdd(e); }}
           disabled={!inStock}
-          className={`w-full py-3 rounded-lg text-white font-semibold transition focus:outline-none ${!inStock ? 'bg-gray-300 text-gray-700 cursor-not-allowed' : 'bg-linear-to-r from-blue-500 to-blue-400 hover:from-blue-600 hover:to-blue-500 shadow-md'}`}
+          className={`w-full py-2 rounded-md text-white text-sm font-semibold transition focus:outline-none ${!inStock ? 'bg-gray-300 text-gray-700 cursor-not-allowed' : 'bg-linear-to-r from-blue-500 to-blue-400 hover:from-blue-600 hover:to-blue-500 shadow-md'}`}
         >
           {added ? 'View Cart' : 'Add to Cart'}
         </button>
