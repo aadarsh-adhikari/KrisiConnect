@@ -84,7 +84,7 @@ const Navbar = () => {
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 flex justify-between items-center px-4 sm:px-6 h-20 bg-[#354b7e] backdrop-blur-sm shadow-md border-b border-gray-100 dark:border-gray-800">
+    <header className="fixed top-0 left-0 right-0 z-50 flex justify-between items-center px-4 sm:px-6 h-20 bg-emerald-600 backdrop-blur-sm shadow-md border-b border-gray-100 dark:border-gray-800">
       <div className="flex items-center gap-3">
         <Link href="/" className="flex items-center gap-3">
           <div className="h-10 w-auto flex items-center">
@@ -100,20 +100,29 @@ const Navbar = () => {
       </div>
 
       <nav className="space-x-6 hidden md:flex text-base font-medium text-white">
-        <Link href="/" className="text-white hover:text-green-300 hover:underline transition-colors">
-          Home
+        <Link href="/" className="relative group inline-flex items-center px-1 py-1 -my-1">
+          <span className="relative z-10 transition-transform duration-200 group-hover:-translate-y-0.5">Home</span>
+          <span className="absolute left-0 -bottom-1 h-0.5 w-full bg-white/30 scale-x-0 group-hover:scale-x-100 origin-center transform transition-transform duration-300"></span>
         </Link>
-        <Link href="/marketplace" className="text-white hover:text-green-300 hover:underline transition-colors">
-          Marketplace
+
+        <Link href="/marketplace" className="relative group inline-flex items-center px-1 py-1 -my-1">
+          <span className="relative z-10 transition-transform duration-200 group-hover:-translate-y-0.5">Marketplace</span>
+          <span className="absolute left-0 -bottom-1 h-0.5 w-full bg-white/30 scale-x-0 group-hover:scale-x-100 origin-center transform transition-transform duration-300"></span>
         </Link>
-        {/* <Link href="/farmers" className="text-white hover:text-green-300 hover:underline transition-colors">
-          Farmers
+
+        {/* <Link href="/farmers" className="relative group inline-flex items-center px-1 py-1 -my-1">
+          <span className="relative z-10 transition-transform duration-200 group-hover:-translate-y-0.5">Farmers</span>
+          <span className="absolute left-0 -bottom-1 h-0.5 w-full bg-white/30 scale-x-0 group-hover:scale-x-100 origin-center transform transition-transform duration-300"></span>
         </Link> */}
-        <Link href="/about" className="text-white hover:text-green-300 hover:underline transition-colors">
-          About
+
+        <Link href="/about" className="relative group inline-flex items-center px-1 py-1 -my-1">
+          <span className="relative z-10 transition-transform duration-200 group-hover:-translate-y-0.5">About</span>
+          <span className="absolute left-0 -bottom-1 h-0.5 w-full bg-white/30 scale-x-0 group-hover:scale-x-100 origin-center transform transition-transform duration-300"></span>
         </Link>
-        <Link href="/contact" className="text-white hover:text-green-300 hover:underline transition-colors">
-          Contact
+
+        <Link href="/contact" className="relative group inline-flex items-center px-1 py-1 -my-1">
+          <span className="relative z-10 transition-transform duration-200 group-hover:-translate-y-0.5">Contact</span>
+          <span className="absolute left-0 -bottom-1 h-0.5 w-full bg-white/30 scale-x-0 group-hover:scale-x-100 origin-center transform transition-transform duration-300"></span>
         </Link>
       </nav>
 
@@ -216,12 +225,30 @@ const Navbar = () => {
 
 
             <nav className="flex flex-col gap-3">
-              <Link href="/" onClick={() => setShowMobileMenu(false)} className="py-2 px-3 rounded text-white hover:bg-white/10">Home</Link>
-              <Link href="/marketplace" onClick={() => setShowMobileMenu(false)} className="py-2 px-3 rounded text-white hover:bg-white/10">Marketplace</Link>
-              {/* <Link href="/farmers" onClick={() => setShowMobileMenu(false)} className="py-2 px-3 rounded text-white hover:bg-white/10">Farmers</Link> */}
-              <Link href="/about" onClick={() => setShowMobileMenu(false)} className="py-2 px-3 rounded text-white hover:bg-white/10">About</Link>
-              <Link href="/cart" onClick={() => setShowMobileMenu(false)} className="py-2 px-3 rounded text-white hover:bg-white/10">Cart {totalItems > 0 && (<span className="ml-2 inline-block bg-red-500 text-white text-xs rounded-full w-5 h-5 text-center">{totalItems}</span>)}</Link>
-              <Link href="/contact" onClick={() => setShowMobileMenu(false)} className="py-2 px-3 rounded text-white hover:bg-white/10">Contact</Link>
+              <Link href="/" onClick={() => setShowMobileMenu(false)} className="py-2 px-3 rounded text-white hover:bg-white/10 group">
+                <span className="inline-block transition-transform duration-150 group-hover:-translate-x-1">Home</span>
+              </Link>
+
+              <Link href="/marketplace" onClick={() => setShowMobileMenu(false)} className="py-2 px-3 rounded text-white hover:bg-white/10 group">
+                <span className="inline-block transition-transform duration-150 group-hover:-translate-x-1">Marketplace</span>
+              </Link>
+
+              {/* <Link href="/farmers" onClick={() => setShowMobileMenu(false)} className="py-2 px-3 rounded text-white hover:bg-white/10 group">
+                <span className="inline-block transition-transform duration-150 group-hover:-translate-x-1">Farmers</span>
+              </Link> */}
+
+              <Link href="/about" onClick={() => setShowMobileMenu(false)} className="py-2 px-3 rounded text-white hover:bg-white/10 group">
+                <span className="inline-block transition-transform duration-150 group-hover:-translate-x-1">About</span>
+              </Link>
+
+              <Link href="/cart" onClick={() => setShowMobileMenu(false)} className="py-2 px-3 rounded text-white hover:bg-white/10 group"> 
+                <span className="inline-block transition-transform duration-150 group-hover:-translate-x-1">Cart</span>
+                {totalItems > 0 && (<span className="ml-2 inline-block bg-red-500 text-white text-xs rounded-full w-5 h-5 text-center">{totalItems}</span>)}
+              </Link>
+
+              <Link href="/contact" onClick={() => setShowMobileMenu(false)} className="py-2 px-3 rounded text-white hover:bg-white/10 group">
+                <span className="inline-block transition-transform duration-150 group-hover:-translate-x-1">Contact</span>
+              </Link>
             </nav>
 
             <div className="mt-4">

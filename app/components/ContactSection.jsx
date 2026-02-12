@@ -18,8 +18,8 @@ export default function ContactSection() {
   };
 
   return (
-    <section className="min-h-screen px-6 bg-[color:var(--background)] text-[color:var(--foreground)]">
-      <div className="max-w-6xl w-full mx-auto grid grid-cols-1 md:grid-cols-2 gap-16 items-center py-16">
+    <section className="px-6 bg-[color:var(--background)] text-[color:var(--foreground)]">
+      <div className="max-w-6xl w-full mx-auto grid grid-cols-1 md:grid-cols-2 gap-16 items-center py-6">
         
         {/* Left: Form */}
         <form onSubmit={sendMail} className="space-y-8 bg-[color:var(--card)] border border-[color:var(--border)] rounded-lg p-8 shadow">
