@@ -1,12 +1,20 @@
-/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 import React, { useState, useMemo, useEffect } from "react";
 import Image from "next/image";
 import { FaEllipsisV, FaSearch } from "react-icons/fa";
 
-export default function ProductsTable({ products = [], onEdit, onDelete, onAdd }) {
+export default function ProductsTable({ products = [], onEdit, onDelete, onAdd, onQuantityChange }) {
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState(new Set());
+  const [qtyMap, setQtyMap] = useState({});
+  const [savingQty, setSavingQty] = useState({});
+
+  // sync quantities when products change
+  useEffect(() => {
+    const map = {};
+    (products || []).forEach((p) => { map[p._id] = p.quantity ?? 0; });
+    setQtyMap(map);
+  }, [products]);
 
   // use API products directly
   const combined = useMemo(() => {
@@ -31,7 +39,7 @@ export default function ProductsTable({ products = [], onEdit, onDelete, onAdd }
 
   useEffect(() => {
     if (page > totalPages) setPage(totalPages);
-  }, [totalPages]);
+  }, [totalPages, page]);
 
   const pageItems = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
   const startIndex = filtered.length === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
@@ -132,7 +140,35 @@ export default function ProductsTable({ products = [], onEdit, onDelete, onAdd }
                     </td>
 
                     <td className="p-3">₹{p.price ?? 0}</td>
-                    <td className="p-3">{p.quantity ?? 0}</td>
+                    <td className="p-3">
+                      {typeof onQuantityChange === 'function' ? (
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="number"
+                            value={qtyMap[p._id] ?? (p.quantity ?? 0)}
+                            onChange={(e) => setQtyMap((m) => ({ ...m, [p._id]: Number(e.target.value || 0) }))}
+                            onBlur={async (e) => {
+                              const newQty = Number(e.target.value || 0);
+                              if (newQty === (p.quantity ?? 0)) return;
+                              try {
+                                setSavingQty((s) => ({ ...s, [p._id]: true }));
+                                await onQuantityChange(p._id, newQty);
+                              } catch (err) {
+                                // revert locally on error
+                                setQtyMap((m) => ({ ...m, [p._id]: p.quantity ?? 0 }));
+                              } finally {
+                                setSavingQty((s) => ({ ...s, [p._id]: false }));
+                              }
+                            }}
+                            className="w-20 px-2 py-1 border rounded text-sm"
+                            min={0}
+                          />
+                          <div className="text-xs text-gray-500">{savingQty[p._id] ? 'Saving...' : 'Saved'}</div>
+                        </div>
+                      ) : (
+                        p.quantity ?? 0
+                      )}
+                    </td>
                     <td className="p-3">₹{revenue}</td>
                     <td className="p-3">
                       <span className={`inline-block px-3 py-1 rounded-full text-xs ${p.quantity > 0 ? 'bg-green-50 text-green-700' : 'bg-gray-50 text-gray-500'}`}>{p.quantity > 0 ? 'Active' : 'Out of stock'}</span>

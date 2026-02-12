@@ -3,7 +3,7 @@ import Order from '@/app/models/order';
 import Product from '@/app/models/product';
 import { NextResponse } from 'next/server';
 
-const ALLOWED_SELLER_STATUSES = ['shipped', 'cancelled'];
+const ALLOWED_SELLER_STATUSES = ['shipped', 'cancelled', 'delivered'];
 
 export async function PATCH(request, { params }) {
   try {
@@ -25,11 +25,11 @@ export async function PATCH(request, { params }) {
 
     if (product.sellerId.toString() !== requesterId) return NextResponse.json({ message: 'Forbidden: only product seller can update status' }, { status: 403 });
 
-    // Enforce simple transitions: seller may set shipped or cancelled
+    // Allow seller to move orders to shipped / cancelled / delivered (server-enforced list)
     if (order.status === status) return NextResponse.json(order, { status: 200 });
 
-    // Prevent seller from marking delivered (buyer should confirm)
-    if (status === 'delivered') return NextResponse.json({ message: 'Seller cannot mark as delivered' }, { status: 400 });
+    // Note: buyers may still confirm delivered via the /confirm endpoint; allowing sellers to mark delivered
+    // is a deliberate policy change to support seller-confirmation of delivery.
 
     order.status = status;
     await order.save();

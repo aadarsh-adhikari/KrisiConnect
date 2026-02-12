@@ -32,6 +32,43 @@ const BuyerDashboard = () => {
   const [cancellingId, setCancellingId] = useState(null);
   const [cancelError, setCancelError] = useState("");
 
+  // UI: order search + filter
+  const [orderQuery, setOrderQuery] = useState("");
+  const [orderFilter, setOrderFilter] = useState("");
+
+  // filtered orders for display (search by product name or id + status)
+  const filteredOrders = (orders || []).filter((o) => {
+    const productName = (products.find((p) => p._id === (o.productId?.toString?.() || o.productId))?.name || "").toLowerCase();
+    const q = (orderQuery || "").toLowerCase();
+    if (orderFilter && o.status !== orderFilter) return false;
+    if (!q) return true;
+    return productName.includes(q) || o._id?.toString?.().includes(q) || (o.status || "").toLowerCase().includes(q);
+  });
+
+  const exportOrdersCSV = () => {
+    const rows = ["orderId,product,qty,status,total,orderDate"];
+    for (const o of filteredOrders) {
+      const product = products.find((p) => p._id === (o.productId?.toString?.() || o.productId));
+      const line = [
+        `"${o._id}"`,
+        `"${(product?.name || o.productId || '').toString().replace(/"/g, '""') }"`,
+        o.quantity || 0,
+        o.status || '',
+        o.totalPrice ?? '',
+        `"${new Date(o.orderDate || o.createdAt).toLocaleString()}"`,
+      ].join(',');
+      rows.push(line);
+    }
+    const csv = rows.join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `orders_${user?._id || 'me'}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const handleDeleteAccount = async () => {
     if (!window.confirm("Are you sure? This will permanently delete your account.")) return;
     setDeleteLoading(true);
@@ -351,18 +388,40 @@ const BuyerDashboard = () => {
 
       {/* Orders Section */}
       <div className="bg-white rounded-lg shadow mb-6">
-        <div className="border-b p-6">
-          <h2 className="text-2xl font-bold text-green-700">
-            <FaBox className="inline mr-2" /> My Orders
-          </h2>
+        <div className="border-b p-6 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <h2 className="text-2xl font-bold text-green-700">
+              <FaBox className="inline mr-2" /> My Orders
+            </h2>
+            <div className="text-sm text-gray-500 ml-2">Manage and track your recent purchases</div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <input
+              placeholder="Search orders or product..."
+              value={orderQuery}
+              onChange={(e) => setOrderQuery(e.target.value)}
+              className="px-3 py-2 border rounded-md text-sm w-64"
+            />
+
+            <select value={orderFilter} onChange={(e) => setOrderFilter(e.target.value)} className="px-3 py-2 border rounded-md text-sm">
+              <option value="">All status</option>
+              <option value="pending">Pending</option>
+              <option value="shipped">Shipped</option>
+              <option value="delivered">Delivered</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+
+            <button onClick={exportOrdersCSV} className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded text-sm">Export CSV</button>
+          </div>
         </div>
 
         <div className="p-6">
             <div>
-              {orders.length === 0 ? (
+              {filteredOrders.length === 0 ? (
                 <div className="text-center py-12">
                   <FaBox className="text-6xl text-gray-300 mx-auto mb-4" />
-                  <p className="text-gray-500 text-lg mb-4">No orders yet</p>
+                  <p className="text-gray-500 text-lg mb-4">No orders found</p>
                   <Link
                     href="/marketplace"
                     className="inline-block bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-semibold"
@@ -372,7 +431,7 @@ const BuyerDashboard = () => {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {orders.map((order) => (
+                  {filteredOrders.map((order) => (
                     <div key={order._id} className="border rounded-lg p-4 hover:shadow-md transition">
                       <div className="flex justify-between items-start">
                         <div>
@@ -382,9 +441,18 @@ const BuyerDashboard = () => {
                         </div>
 
                         <div className="flex items-center gap-3">
-                          <span className={`px-4 py-1 rounded-full text-sm font-semibold ${order.status === 'delivered' ? 'bg-green-100 text-green-800' : order.status === 'shipped' ? 'bg-blue-100 text-blue-800' : order.status === 'cancelled' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'}`}>
-                            {order.status || "Processing"}
-                          </span>
+                          <div className="flex flex-col items-end">
+                            <span className={`px-4 py-1 rounded-full text-sm font-semibold ${order.status === 'delivered' ? 'bg-green-100 text-green-800' : order.status === 'shipped' ? 'bg-blue-100 text-blue-800' : order.status === 'cancelled' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'}`}>
+                              {order.status || "Processing"}
+                            </span>
+
+                            {/* simple status stepper */}
+                            <div className="mt-2 flex items-center gap-2 text-xs text-gray-500">
+                              <div className={`${order.status === 'pending' ? 'font-semibold text-yellow-700' : order.status !== 'pending' ? 'text-gray-400' : ''}`}>● Pending</div>
+                              <div className={`${order.status === 'shipped' ? 'font-semibold text-blue-700' : order.status === 'delivered' || order.status === 'shipped' ? 'text-gray-400' : ''}`}>● Shipped</div>
+                              <div className={`${order.status === 'delivered' ? 'font-semibold text-green-700' : 'text-gray-400'}`}>● Delivered</div>
+                            </div>
+                          </div>
 
                           {order.status === 'shipped' && (
                             <button
