@@ -12,7 +12,7 @@ export default function Marketplace() {
   const [categories, setCategories] = useState([])
   const [minPrice, setMinPrice] = useState("")
   const [maxPrice, setMaxPrice] = useState("")
-  const [sortBy, setSortBy] = useState("")
+  const [sortBy, setSortBy] = useState("newest")
   const [locations, setLocations] = useState([])
   const [selectedLocations, setSelectedLocations] = useState(new Set())
 
@@ -35,7 +35,11 @@ export default function Marketplace() {
     try {
       const res = await fetch('/api/products')
       if (!res.ok) throw new Error('Failed to load')
-      const data = await res.json()
+      let data = await res.json()
+      // sort newest to oldest based on createdAt/orderDate
+      if (Array.isArray(data)) {
+        data = data.slice().sort((a, b) => new Date(b.createdAt || b.orderDate) - new Date(a.createdAt || a.orderDate));
+      }
       setProducts(data)
     } catch (e) {
       console.error('PRODUCTS FETCH ERROR', e)
@@ -78,6 +82,8 @@ export default function Marketplace() {
     .sort((a, b) => {
       if (sortBy === 'price-asc') return a.price - b.price
       if (sortBy === 'price-desc') return b.price - a.price
+      if (sortBy === 'newest') return new Date(b.createdAt || b.orderDate) - new Date(a.createdAt || a.orderDate)
+      if (sortBy === 'oldest') return new Date(a.createdAt || a.orderDate) - new Date(b.createdAt || b.orderDate)
       return 0
     })
 
@@ -173,6 +179,8 @@ export default function Marketplace() {
               <div className="flex items-center gap-3">
                 <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="px-3 py-2 border rounded">
                   <option value="">Sort</option>
+                  <option value="newest">Newest</option>
+                  <option value="oldest">Oldest</option>
                   <option value="price-asc">Price: low → high</option>
                   <option value="price-desc">Price: high → low</option>
                 </select>

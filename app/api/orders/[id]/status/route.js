@@ -31,6 +31,16 @@ export async function PATCH(request, { params }) {
     // Note: buyers may still confirm delivered via the /confirm endpoint; allowing sellers to mark delivered
     // is a deliberate policy change to support seller-confirmation of delivery.
 
+    // if seller cancels the order, increment product stock
+    if (status === 'cancelled' && order.status !== 'cancelled') {
+      // fetch product and restore quantity
+      const prod = await Product.findById(order.productId);
+      if (prod) {
+        prod.quantity = (prod.quantity || 0) + (order.quantity || 0);
+        await prod.save();
+      }
+    }
+
     order.status = status;
     await order.save();
     return NextResponse.json(order, { status: 200 });

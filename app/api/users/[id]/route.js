@@ -4,6 +4,23 @@ import Product from '@/app/models/product';
 import cloudinary from '@/lib/cloudinary';
 import { NextResponse } from 'next/server';
 
+export async function GET(req, { params }) {
+  try {
+    await ConnectDB();
+    const { id } = await params;
+    const user = await User.findById(id).lean();
+    if (!user) {
+      return NextResponse.json({ message: 'User not found' }, { status: 404 });
+    }
+    // only expose limited fields
+    const { name, contact, role, _id } = user;
+    return NextResponse.json({ name, contact, role, _id }, { status: 200 });
+  } catch (e) {
+    console.error('USER GET ERROR:', e);
+    return NextResponse.json({ message: 'Error fetching user', error: String(e) }, { status: 500 });
+  }
+}
+
 export async function DELETE(req, { params }) {
   try {
     await ConnectDB();

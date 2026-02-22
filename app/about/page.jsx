@@ -104,25 +104,33 @@ export default function About() {
                 <p className="mt-2 text-sm text-gray-600">Create a seller account, add your product details (photos, quantity, price) and publish the listing. Buyers will see it in the marketplace.</p>
               </details>
 
-              <details className="bg-white p-4 rounded-lg shadow">
-                <summary className="font-semibold">Is shipping included in the price?</summary>
-                <p className="mt-2 text-sm text-gray-600">Shipping depends on the listing — some farmers include delivery while others offer pickup. Delivery options are shown on each product.</p>
-              </details>
-
+             
               <details className="bg-white p-4 rounded-lg shadow">
                 <summary className="font-semibold">How are payments handled?</summary>
-                <p className="mt-2 text-sm text-gray-600">Payments are processed securely through our checkout; farmers receive payments after order confirmation and delivery where applicable.</p>
+                <p className="mt-2 text-sm text-gray-600">Payments are arranged directly between buyers and sellers via the chat feature. We don’t collect any commission – the platform simply facilitates connection and communication.</p>
               </details>
 
               <details className="bg-white p-4 rounded-lg shadow">
-                <summary className="font-semibold">Is there a verification process?</summary>
-                <p className="mt-2 text-sm text-gray-600">We verify seller details and encourage farmers to provide clear photos and information. Our trust measures increase buyer confidence.</p>
+                <summary className="font-semibold">Can I change or cancel my order?</summary>
+                <p className="mt-2 text-sm text-gray-600">Buyers can cancel orders from their dashboard while the status is still pending. Sellers can also cancel through their orders panel. After cancellation, stock is automatically restored.</p>
               </details>
+
+              <details className="bg-white p-4 rounded-lg shadow">
+                <summary className="font-semibold">Do I need to pay a fee to use Krisi Connect?</summary>
+                <p className="mt-2 text-sm text-gray-600">No. The platform is free for both buyers and sellers. We don’t take any commission or listing fees; our goal is to support direct trade.</p>
+              </details>
+
+              <details className="bg-white p-4 rounded-lg shadow">
+                <summary className="font-semibold">How do I contact support?</summary>
+                <p className="mt-2 text-sm text-gray-600">You can reach out through the contact form on the website or via the chat feature once logged in. We’re happy to help with any questions or issues.</p>
+              </details>
+
+            
             </div>
           </div>
 
         {/* Team */}
-        <section className="mb-12 mt-8 text-center">
+        {/* <section className="mb-12 mt-8 text-center">
           <h3 className="text-2xl font-bold mb-6">Meet the team</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
             <div className="bg-white p-6 rounded-xl shadow text-center">
@@ -146,7 +154,7 @@ export default function About() {
               <p className="text-sm text-gray-500">Team</p>
             </div>
           </div>
-        </section>
+        </section> */}
 
       </div>
     </main>

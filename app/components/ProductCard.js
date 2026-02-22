@@ -40,6 +40,10 @@ const ProductCard = ({ product, onAddToCart }) => {
   const handleAdd = (e) => {
     if (e && typeof e.preventDefault === 'function') e.preventDefault()
     if (e && typeof e.stopPropagation === 'function') e.stopPropagation()
+    if (user?.role === 'farmer') {
+      alert('You must be logged in as a buyer to purchase products')
+      return
+    }
     if (added) {
       router.push('/cart')
       return
@@ -84,20 +88,13 @@ const ProductCard = ({ product, onAddToCart }) => {
 
         <p className="text-xs text-gray-600 mt-3 line-clamp-3">{product.description}</p>
 
-        <div className="mt-5 flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center text-lg">👨‍🌾</div>
-            <div>
-              <div className="text-sm font-medium text-gray-800">{product.sellerName ?? product.farmer ?? (product.sellerId && typeof product.sellerId === 'object' ? product.sellerId.name : product.sellerId) ?? 'Seller'}</div>
-              <div className="text-xs text-gray-400">Added: {createdAt}</div>
-            </div>
+        <div className="mt-5 flex items-center justify-between">
+          <div>
+            <div className="text-sm font-medium text-gray-800">{product.sellerName ?? product.farmer ?? (product.sellerId && typeof product.sellerId === 'object' ? product.sellerId.name : product.sellerId) ?? 'Seller'}</div>
+            <div className="text-xs text-gray-400">Added: {createdAt}</div>
           </div>
 
-          <div className="ml-auto flex items-center gap-3">
-           
-
-            <div className="text-xs text-gray-500">{inStock ? `${maxQty} quantity` : 'Out of stock'}</div>
-          </div>
+          <div className="text-xs text-gray-500">{inStock ? `${maxQty} quantity` : 'Out of stock'}</div>
         </div>
       </div>
 
@@ -106,8 +103,8 @@ const ProductCard = ({ product, onAddToCart }) => {
         <button
           type="button"
           onClick={(e) => { e.stopPropagation(); handleAdd(e); }}
-          disabled={!inStock}
-          className={`w-full py-2 rounded-md text-white text-sm font-semibold transition focus:outline-none ${!inStock ? 'bg-gray-300 text-gray-700 cursor-not-allowed' : 'bg-linear-to-r from-blue-500 to-blue-400 hover:from-blue-600 hover:to-blue-500 shadow-md'}`}
+          disabled={!inStock || user?.role === 'farmer'}
+          className={`w-full py-2 rounded-md text-white text-sm font-semibold transition focus:outline-none ${!inStock || user?.role === 'farmer' ? 'bg-gray-300 text-gray-700 cursor-not-allowed' : 'bg-linear-to-r from-blue-500 to-blue-400 hover:from-blue-600 hover:to-blue-500 shadow-md'}`}
         >
           {added ? 'View Cart' : 'Add to Cart'}
         </button>

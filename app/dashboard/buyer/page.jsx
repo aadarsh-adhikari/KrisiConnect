@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useAuthStore } from "@/app/store/authStore";
 import { useRouter } from "next/navigation";
-import { FaShoppingCart, FaBox } from "react-icons/fa";
+import { FaShoppingCart, FaBox, FaWhatsapp } from "react-icons/fa";
 import { useCartStore } from "@/app/store/cartStore";
 import Link from "next/link";
 
@@ -19,6 +19,7 @@ const BuyerDashboard = () => {
 
   const [orders, setOrders] = useState([]);
   const [products, setProducts] = useState([]);
+  const [sellers, setSellers] = useState({});
   const [placingItemId, setPlacingItemId] = useState(null);
   const [placingAll, setPlacingAll] = useState(false);
   const [cartOrderError, setCartOrderError] = useState('');
@@ -94,10 +95,20 @@ const BuyerDashboard = () => {
   };
 
   useEffect(() => {
+    // on refresh the auth store may be initializing and `user` will briefly be null.
+    // check localStorage to see if a user is persisted before redirecting away.
+    const storedUser = typeof window !== 'undefined' ? localStorage.getItem('krisi_user') : null;
+
     if (!user) {
-      router.push("/");
+      // if there is no stored user, definitely redirect to home
+      if (!storedUser) {
+        router.push("/");
+      }
+      // otherwise we wait for the store to hydrate - do nothing
       return;
     }
+
+    // at this point we have a user object
     if (user.role !== "buyer") {
       router.push("/");
       return;
@@ -108,7 +119,7 @@ const BuyerDashboard = () => {
 
   // fetch orders for this user
   const fetchOrders = async () => {
-    if (!user) return;
+    if (!user) return [];
     try {
       const res = await fetch(`/api/orders?userId=${user._id}`);
       if (!res.ok) {
@@ -116,9 +127,12 @@ const BuyerDashboard = () => {
         throw new Error(err.message || 'Failed to fetch orders');
       }
       const data = await res.json();
-      setOrders(Array.isArray(data) ? data : []);
+      const arr = Array.isArray(data) ? data : [];
+      setOrders(arr);
+      return arr;
     } catch (e) {
       console.error(e);
+      return [];
     }
   };
 
@@ -132,16 +146,42 @@ const BuyerDashboard = () => {
         throw new Error(err.message || 'Failed to fetch products');
       }
       const data = await res.json();
-      setProducts(Array.isArray(data) ? data : []);
+      const arr = Array.isArray(data) ? data : [];
+      setProducts(arr);
+      return arr;
     } catch (e) {
       console.error(e);
+      return [];
     }
   };
 
   const fetchData = async () => {
     try {
       setLoading(true);
-      await Promise.all([fetchOrders(), fetchProducts()]);
+      const [ordArr = [], prodArr = []] = await Promise.all([fetchOrders(), fetchProducts()]);
+      // populate seller info after products + orders loaded
+      try {
+        const ids = new Set();
+        for (const o of ordArr) {
+          const prod = prodArr.find((p) => p._id === (o.productId?.toString?.() || o.productId));
+          if (prod && prod.sellerId) {
+            const sid = prod.sellerId._id ? prod.sellerId._id.toString() : prod.sellerId.toString();
+            ids.add(sid);
+          }
+        }
+        const sellerObj = {};
+        await Promise.all(Array.from(ids).map(async (id) => {
+          try {
+            const res = await fetch(`/api/users/${id}`);
+            if (!res.ok) return;
+            const u = await res.json();
+            sellerObj[id] = u;
+          } catch {}
+        }));
+        setSellers(sellerObj);
+      } catch (e) {
+        console.error('Failed to load seller info', e);
+      }
     } catch (error) {
       console.error("Error fetching data", error);
     } finally {
@@ -226,6 +266,20 @@ const BuyerDashboard = () => {
       }
       const order = await res.json();
       setOrders((s) => [order, ...s]);
+
+      // ensure seller info for this order is available
+      const prod = products.find((p) => p._id === order.productId.toString());
+      if (prod && prod.sellerId) {
+        const sid = prod.sellerId._id ? prod.sellerId._id.toString() : prod.sellerId.toString();
+        if (!sellers[sid]) {
+          fetch(`/api/users/${sid}`)
+            .then((r) => r.ok ? r.json() : null)
+            .then((u) => {
+              if (u) setSellers((prev) => ({ ...prev, [sid]: u }));
+            })
+            .catch(() => {});
+        }
+      }
 
       // update product stock locally if present
       setProducts((ps) => ps.map((p) => (p._id === order.productId.toString() ? { ...p, quantity: Math.max(0, (p.quantity || 0) - order.quantity) } : p)));
@@ -432,13 +486,44 @@ const BuyerDashboard = () => {
               ) : (
                 <div className="space-y-4">
                   {filteredOrders.map((order) => (
-                    <div key={order._id} className="border rounded-lg p-4 hover:shadow-md transition">
+                    <div
+                    key={order._id}
+                    className="border rounded-lg p-4 hover:shadow-md transition cursor-pointer"
+                    onClick={() => {
+                      const prod = products.find((p) => p._id === (order.productId?.toString?.() || order.productId));
+                      if (prod?._id) router.push(`/product/${prod._id}`);
+                    }}
+                >
                       <div className="flex justify-between items-start">
                         <div>
                           <p className="font-semibold text-lg text-gray-800">Order #{order._id}</p>
                           <p className="text-sm text-gray-600">Product: {products.find((p) => p._id === (order.productId?.toString?.() || order.productId))?.name ?? order.productId}</p>
                           <p className="text-gray-500 text-sm">Qty: {order.quantity} · Date: {new Date(order.orderDate || order.createdAt).toLocaleDateString()}</p>
                         </div>
+                        {(() => {
+                          const prod = products.find((p) => p._id === (order.productId?.toString?.() || order.productId));
+                          const sid = prod && prod.sellerId ? (prod.sellerId._id ? prod.sellerId._id.toString() : prod.sellerId.toString()) : null;
+                          const seller = sid ? sellers[sid] : null;
+                          if (seller && seller.contact) {
+                            const phone = seller.contact.replace(/[^0-9+]/g, '');
+                            const text = encodeURIComponent(`Hi ${seller.name}, I have a question about my order ${order._id} for ${prod?.name || ''}`);
+                            return (
+                              <p className="mt-1">
+                                <a
+                                  href={`https://wa.me/${phone}?text=${text}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="inline-flex items-center gap-1 bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm"
+                                >
+                                  <FaWhatsapp className="text-lg" />
+                                  Message seller
+                                </a>
+                              </p>
+                            );
+                          }
+                          return null;
+                        })()}
 
                         <div className="flex items-center gap-3">
                           <div className="flex flex-col items-end">

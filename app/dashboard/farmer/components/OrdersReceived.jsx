@@ -1,18 +1,27 @@
 "use client";
 import React, { useState } from "react";
+import { useAuthStore } from "../../../store/authStore";
 
 export default function OrdersReceived({ sellerOrders = [], products = [], setSellerOrders }) {
   const [updatingOrderId, setUpdatingOrderId] = useState(null);
 
+  const user = useAuthStore((s) => s.user);
+
   const updateOrderStatus = async (orderId, status) => {
     setUpdatingOrderId(orderId);
     try {
-      const res = await fetch(`/api/orders/${orderId}`, {
+      const res = await fetch(`/api/orders/${orderId}/status`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-requester-id': user?._id,
+        },
         body: JSON.stringify({ status }),
       });
-      if (!res.ok) throw new Error('Failed to update order');
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || 'Failed to update order');
+      }
       const updated = await res.json();
       // update parent state if setter provided
       if (typeof setSellerOrders === 'function') {
@@ -65,7 +74,17 @@ export default function OrdersReceived({ sellerOrders = [], products = [], setSe
                     )}
 
                     {o.status !== 'cancelled' && o.status !== 'delivered' && (
-                      <button onClick={() => updateOrderStatus(o._id, 'cancelled')} disabled={updatingOrderId === o._id} className="px-2 py-1 bg-red-600 text-white rounded text-xs">{updatingOrderId === o._id ? '...' : 'Cancel'}</button>
+                      <button
+                        onClick={() => {
+                          if (window.confirm('Are you sure you want to cancel this order?')) {
+                            updateOrderStatus(o._id, 'cancelled');
+                          }
+                        }}
+                        disabled={updatingOrderId === o._id}
+                        className="px-2 py-1 bg-red-600 text-white rounded text-xs"
+                      >
+                        {updatingOrderId === o._id ? '...' : 'Cancel'}
+                      </button>
                     )}
 
                   </div>

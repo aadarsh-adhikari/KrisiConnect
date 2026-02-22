@@ -46,9 +46,14 @@ const ProductDetailClient = ({ product }) => {
 
   const addItem = useCartStore((s) => s.addItem);
   const inCart = useCartStore((s) => s.items.some((i) => i.productId === product._id));
+  const user = useAuthStore((s) => s.user);
 
   const handleAddToCart = () => {
     if (!product) return;
+    if (user?.role === 'farmer') {
+      alert('You must be logged in as a buyer to purchase products');
+      return;
+    }
     addItem(product, 1);
   };
 
@@ -137,8 +142,15 @@ const ProductDetailClient = ({ product }) => {
             {/* Contact: WhatsApp if phone available; fallback to email */}
             <ContactSellerButton product={product} />
             <button
-              onClick={() => { if (inCart) router.push('/cart'); else handleAddToCart(); }}
-              className={`w-full py-3 rounded-lg text-white font-semibold transition focus:outline-none ${inCart ? 'bg-green-600' : 'bg-linear-to-r from-blue-500 to-blue-400 hover:from-blue-600 hover:to-blue-500 shadow-md'}`}
+              onClick={() => {
+                if (user?.role === 'farmer') {
+                  alert('You must be logged in as a buyer to purchase products');
+                  return;
+                }
+                if (inCart) router.push('/cart'); else handleAddToCart();
+              }}
+              disabled={user?.role === 'farmer'}
+              className={`w-full py-3 rounded-lg text-white font-semibold transition focus:outline-none ${user?.role === 'farmer' ? 'bg-gray-300 text-gray-700 cursor-not-allowed' : inCart ? 'bg-green-600' : 'bg-linear-to-r from-blue-500 to-blue-400 hover:from-blue-600 hover:to-blue-500 shadow-md'}`}
             >
               {inCart ? 'View Cart' : 'Add to Cart'}
             </button>

@@ -12,12 +12,19 @@ export async function PATCH(request, { params }) {
     await ConnectDB();
     const order = await Order.findById(orderId);
     if (!order) return NextResponse.json({ message: 'Order not found' }, { status: 404 });
-    if (order.buyerId.toString() !== requesterId) return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
+    // allow either buyer or the seller to cancel
+    const product = await Product.findById(order.productId);
+    if (!product) return NextResponse.json({ message: 'Product not found' }, { status: 404 });
 
-    // Only allow buyer to cancel before seller ships
+    const isBuyer = order.buyerId.toString() === requesterId;
+    const isSeller = product.sellerId && product.sellerId.toString() === requesterId;
+    if (!isBuyer && !isSeller) {
+      return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
+    }
+
+    // Only allow cancellation before seller ships
     if (order.status !== 'pending') return NextResponse.json({ message: 'Order cannot be cancelled' }, { status: 400 });
 
-    const product = await Product.findById(order.productId);
     if (product) {
       product.quantity = (product.quantity || 0) + (order.quantity || 0);
       await product.save();
