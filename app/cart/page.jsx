@@ -6,6 +6,7 @@ import { useCartStore } from '../store/cartStore';
 import { useAuthStore } from '../store/authStore';
 import { useRouter } from 'next/navigation';
 import LoginModal from '../components/modals/login';
+import { formatCurrency } from '@/lib/format';
 
 export default function CartPage() {
   const items = useCartStore((s) => s.items);
@@ -25,7 +26,7 @@ export default function CartPage() {
       <main className="min-h-screen py-20">
         <div className="container mx-auto px-6 md:px-12 max-w-4xl text-center">
           <h1 className="text-2xl font-bold mb-4">Your cart is empty</h1>
-          <p className="text-gray-600 mb-6">Looks like you haven't added anything yet.</p>
+          <p className="text-gray-600 mb-6">Looks like you haven&apos;t added anything yet.</p>
           <Link href="/marketplace" className="inline-block bg-green-600 text-white px-6 py-3 rounded-md">Browse marketplace</Link>
         </div>
       </main>
