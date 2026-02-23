@@ -214,7 +214,7 @@ const ProductForm = ({ onSave, initial, loading, onCancel }) => {
           <div className="md:col-span-2">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label className="text-sm font-semibold text-gray-700">Price (₹) <span className="text-red-500">*</span></label>
+                <label className="text-sm font-semibold text-gray-700">Price (NPR) <span className="text-red-500">*</span></label>
                 <input
                   name="price"
                   type="number"

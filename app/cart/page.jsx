@@ -50,7 +50,7 @@ export default function CartPage() {
 
               <div className="flex-1">
                 <Link href={`/product/${it.productId}`} className="font-medium text-gray-800 block">{it.product.name}</Link>
-                <div className="text-sm text-gray-500">₹{it.product.price} / {it.product.unit}</div>
+                <div className="text-sm text-gray-500">{formatCurrency(it.product.price)} / {it.product.unit}</div>
               </div>
 
               <div className="flex items-center gap-2">
@@ -60,7 +60,7 @@ export default function CartPage() {
               </div>
 
               <div className="ml-6 text-right">
-                <div className="font-medium">₹{(it.qty || 0) * (it.product.price || 0)}</div>
+                <div className="font-medium">{formatCurrency((it.qty || 0) * (it.product.price || 0))}</div>
                 <button onClick={() => removeItem(it.productId)} className="text-sm text-red-600 mt-2">Remove</button>
               </div>
             </div>
@@ -70,7 +70,7 @@ export default function CartPage() {
         <div className="mt-6 bg-white rounded-lg p-4 shadow flex items-center justify-between">
           <div>
             <div className="text-sm text-gray-600">Total</div>
-            <div className="text-2xl font-bold">₹{total}</div>
+            <div className="text-2xl font-bold">{formatCurrency(total)}</div>
           </div>
           <div className="flex items-center gap-3">
             <button onClick={() => { clear(); }} className="py-2 px-4 rounded border">Clear</button>

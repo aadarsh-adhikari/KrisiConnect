@@ -4,6 +4,7 @@ import { useAuthStore } from "@/app/store/authStore";
 import { useRouter } from "next/navigation";
 import { FaShoppingCart, FaBox, FaWhatsapp } from "react-icons/fa";
 import { useCartStore } from "@/app/store/cartStore";
+import { formatCurrency } from "@/lib/format";
 import Link from "next/link";
 
 const BuyerDashboard = () => {
@@ -365,7 +366,7 @@ const BuyerDashboard = () => {
             <div>
               <p className="text-gray-500 text-sm">Cart</p>
               <p className="text-3xl font-bold text-blue-700">{cartItems}</p>
-              <p className="text-sm text-gray-500 mt-1">Total: Rs. {cartTotal?.toLocaleString?.() ?? '0'}</p>
+              <p className="text-sm text-gray-500 mt-1">Total: {formatCurrency(cartTotal)}</p>
             </div>
             <FaShoppingCart className="text-4xl text-blue-200" />
           </div>
@@ -384,7 +385,7 @@ const BuyerDashboard = () => {
               <div key={item.productId} className="flex items-center justify-between gap-4 border rounded p-3">
                 <div>
                   <div className="font-semibold">{item.product?.name ?? item.productId}</div>
-                  <div className="text-sm text-gray-500">Unit: Rs. {item.product?.price?.toLocaleString?.() ?? item.product?.price}</div>
+                  <div className="text-sm text-gray-500">Unit: {formatCurrency(item.product?.price)}</div>
                 </div>
 
                 <div className="flex items-center gap-3">
@@ -396,7 +397,7 @@ const BuyerDashboard = () => {
                     onChange={(e) => updateQty(item.productId, Number(e.target.value || 1))}
                   />
 
-                  <div className="text-sm">Subtotal: Rs. {(Number(item.qty || 1) * (item.product?.price || 0)).toLocaleString()}</div>
+                  <div className="text-sm">Subtotal: {formatCurrency(Number(item.qty || 1) * (item.product?.price || 0))}</div>
 
                   <button
                     onClick={() => placeOrderItem(item)}
@@ -417,7 +418,7 @@ const BuyerDashboard = () => {
             ))}
 
             <div className="flex items-center justify-between border-t pt-3">
-              <div className="text-sm text-gray-600">Total: Rs. {cartTotal?.toLocaleString?.() ?? '0'}</div>
+              <div className="text-sm text-gray-600">Total: {formatCurrency(cartTotal)}</div>
               <div className="flex items-center gap-3">
                 <button
                   onClick={placeAllOrders}

@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import ProductCard from "@/app/components/ProductCard";
 import { FaSearch } from "react-icons/fa";
 import { useCartStore } from "../store/cartStore";
+import { formatCurrency } from '@/lib/format';
 
 export default function Marketplace() {
   const [products, setProducts] = useState([])
@@ -97,7 +98,7 @@ export default function Marketplace() {
           <div className="text-sm font-medium">Your cart</div>
           <div className="text-sm text-gray-600">{totalItems} items</div>
         </div>
-        <div className="mt-3 text-sm text-gray-700">Total: <span className="font-semibold">₹{totalPrice}</span></div>
+        <div className="mt-3 text-sm text-gray-700">Total: <span className="font-semibold">{formatCurrency(totalPrice)}</span></div>
         <div className="mt-3">
           <a href="/cart" className="inline-block bg-green-600 text-white px-3 py-2 rounded text-sm">View cart</a>
         </div>
@@ -144,7 +145,7 @@ export default function Marketplace() {
                 <div className="text-gray-400">—</div>
                 <input type="number" value={maxPrice} onChange={(e) => setMaxPrice(e.target.value)} placeholder="Max" className="w-24 px-2 py-1 border rounded" />
               </div>
-              <div className="text-xs text-gray-400 mt-2">Max price: ₹{maxProductPrice}</div>
+              <div className="text-xs text-gray-400 mt-2">Max price: {formatCurrency(maxProductPrice)}</div>
             </div>
 
             <div className="mb-4">

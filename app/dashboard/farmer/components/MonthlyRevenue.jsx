@@ -7,7 +7,8 @@ export default function MonthlyRevenue({ sellerOrders = [], initialRange = '6m' 
 
   const monthlyData = useMemo(() => {
     const now = new Date();
-    const orders = sellerOrders || [];
+    // only delivered orders contribute to revenue
+    const orders = (sellerOrders || []).filter((o) => o.status === 'delivered');
 
     const groupBy = (labels, keyFn) => {
       const buckets = labels.map((label) => ({ label, total: 0 }));
@@ -86,14 +87,14 @@ export default function MonthlyRevenue({ sellerOrders = [], initialRange = '6m' 
         return `
           <div class="p-2 text-sm bg-white shadow rounded" style="min-width:140px">
             <div class="text-xs text-gray-500">${title}</div>
-            <div class="mt-1 font-semibold">₹${(v || 0).toLocaleString()}</div>
+            <div class="mt-1 font-semibold">NPR ${((v || 0).toLocaleString())}</div>
           </div>
         `;
       },
     },
     interactions: [{ type: 'marker-active' }, { type: 'element-active' }, { type: 'active-region' }],
     xAxis: { label: { style: { fill: '#4b5563' }, autoRotate: false } },
-    yAxis: { label: { formatter: (v) => (v ? `₹${Number(v).toLocaleString()}` : '₹0') } },
+    yAxis: { label: { formatter: (v) => (v ? `NPR ${Number(v).toLocaleString()}` : 'NPR 0') } },
     responsive: true,
   }), [monthlyData]);
 

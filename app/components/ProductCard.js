@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation'
 import { FaShoppingCart, FaCheck } from 'react-icons/fa'
 import { useAuthStore } from '../store/authStore'
 import { useCartStore } from '../store/cartStore'
+import { formatCurrency } from '@/lib/format'
 
 /**
  * ProductCard
@@ -78,7 +79,9 @@ const ProductCard = ({ product, onAddToCart }) => {
       <div className="p-4 flex-1 flex flex-col">
         <div className="flex items-center justify-between gap-3">
           <h3 className="text-lg font-semibold text-gray-900">{product.name}</h3>
-          <div className="text-lg font-bold text-green-600">{typeof product.price === 'number' ? `Rs. ${product.price.toLocaleString()}` : product.price}</div>
+          <div className="text-lg font-bold text-green-600 whitespace-nowrap">
+            {formatCurrency(product.price)}
+          </div>
         </div>
 
         <div className="mt-3 flex items-center gap-2">
@@ -103,8 +106,9 @@ const ProductCard = ({ product, onAddToCart }) => {
         <button
           type="button"
           onClick={(e) => { e.stopPropagation(); handleAdd(e); }}
-          disabled={!inStock || user?.role === 'farmer'}
-          className={`w-full py-2 rounded-md text-white text-sm font-semibold transition focus:outline-none ${!inStock || user?.role === 'farmer' ? 'bg-gray-300 text-gray-700 cursor-not-allowed' : 'bg-linear-to-r from-blue-500 to-blue-400 hover:from-blue-600 hover:to-blue-500 shadow-md'}`}
+          disabled={!inStock}
+          title={user?.role === 'farmer' ? 'Login as buyer to add to cart' : ''}
+          className={`w-full py-2 rounded-md text-white text-sm font-semibold transition focus:outline-none ${!inStock ? 'bg-gray-300 text-gray-700 cursor-not-allowed' : user?.role === 'farmer' ? 'bg-gray-300 text-gray-700' : 'bg-linear-to-r from-blue-500 to-blue-400 hover:from-blue-600 hover:to-blue-500 shadow-md'}`}
         >
           {added ? 'View Cart' : 'Add to Cart'}
         </button>

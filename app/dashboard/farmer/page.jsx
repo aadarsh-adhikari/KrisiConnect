@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import { formatCurrency } from "@/lib/format";
 import { useAuthStore } from "../../store/authStore";
 import { useRouter } from "next/navigation";
 import ProductForm from "./ProductForm";
@@ -33,7 +34,10 @@ const FarmerDashboard = () => {
   // derived stats
   const totalProducts = (products || []).length;
   const totalStock = (products || []).reduce((s, p) => s + (Number(p.quantity) || 0), 0);
-  const estimatedRevenue = (sellerOrders || []).reduce((s, o) => s + (Number(o.totalPrice) || 0), 0);
+  // earnings only count orders that were successfully delivered
+  const totalEarnings = (sellerOrders || [])
+    .filter((o) => o.status === 'delivered')
+    .reduce((s, o) => s + (Number(o.totalPrice) || 0), 0);
   const pendingOrdersCount = (sellerOrders || []).filter((o) => o.status === 'pending').length;
   const activeProductsCount = (products || []).filter((p) => Number(p.quantity) > 0).length;
   const lowStockThreshold = 5;
@@ -64,7 +68,8 @@ const FarmerDashboard = () => {
       const key = `${d.getFullYear()}-${d.getMonth()+1}`;
       months.push({ key, label: d.toLocaleString('default', { month: 'short' }), total: 0 });
     }
-    for (const o of sellerOrders || []) {
+    // only include delivered orders in revenue chart
+    for (const o of (sellerOrders || []).filter((o) => o.status === 'delivered')) {
       const dt = new Date(o.orderDate || o.createdAt);
       const key = `${dt.getFullYear()}-${dt.getMonth()+1}`;
       const m = months.find((x) => x.key === key);
@@ -241,8 +246,8 @@ const FarmerDashboard = () => {
                 <FaMoneyBillWave className="w-5 h-5" />
               </div>
               <div>
-                <div className="text-sm text-gray-500">Total Earnings</div>
-                <div className="mt-2 text-xl font-bold">₹{estimatedRevenue?.toLocaleString?.()}</div>
+                      <div className="text-sm text-gray-500">Total Earnings (delivered)</div>
+                <div className="mt-2 text-xl font-bold">{formatCurrency(totalEarnings)}</div>
               </div>
             </div>
           </div>

@@ -2,6 +2,7 @@
 import React, { useState, useMemo, useEffect } from "react";
 import Image from "next/image";
 import { FaEllipsisV, FaSearch } from "react-icons/fa";
+import { formatCurrency } from "@/lib/format";
 
 export default function ProductsTable({ products = [], onEdit, onDelete, onAdd, onQuantityChange }) {
   const [query, setQuery] = useState("");
@@ -139,7 +140,7 @@ export default function ProductsTable({ products = [], onEdit, onDelete, onAdd, 
                       </div>
                     </td>
 
-                    <td className="p-3">₹{p.price ?? 0}</td>
+                    <td className="p-3">{formatCurrency(p.price)}</td>
                     <td className="p-3">
                       {typeof onQuantityChange === 'function' ? (
                         <div className="flex items-center gap-2">
@@ -169,7 +170,7 @@ export default function ProductsTable({ products = [], onEdit, onDelete, onAdd, 
                         p.quantity ?? 0
                       )}
                     </td>
-                    <td className="p-3">₹{revenue}</td>
+                    <td className="p-3">{formatCurrency(revenue)}</td>
                     <td className="p-3">
                       <span className={`inline-block px-3 py-1 rounded-full text-xs ${p.quantity > 0 ? 'bg-green-50 text-green-700' : 'bg-gray-50 text-gray-500'}`}>{p.quantity > 0 ? 'Active' : 'Out of stock'}</span>
                     </td>

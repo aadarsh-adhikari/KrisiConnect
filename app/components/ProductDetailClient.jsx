@@ -131,7 +131,7 @@ const ProductDetailClient = ({ product }) => {
           <h1 className="text-2xl font-bold text-gray-800">{product.name}</h1>
           <p className="text-sm text-gray-500 mt-1">{product.category} • {product.location}</p>
           <div className="mt-4">
-            <span className="text-3xl font-bold text-green-600">₹{product.price}</span>
+            <span className="text-3xl font-bold text-green-600">{formatCurrency(product.price)}</span>
             <span className="text-sm text-gray-500 ml-2">/{product.unit}</span>
           </div>
 
@@ -149,8 +149,9 @@ const ProductDetailClient = ({ product }) => {
                 }
                 if (inCart) router.push('/cart'); else handleAddToCart();
               }}
-              disabled={user?.role === 'farmer'}
-              className={`w-full py-3 rounded-lg text-white font-semibold transition focus:outline-none ${user?.role === 'farmer' ? 'bg-gray-300 text-gray-700 cursor-not-allowed' : inCart ? 'bg-green-600' : 'bg-linear-to-r from-blue-500 to-blue-400 hover:from-blue-600 hover:to-blue-500 shadow-md'}`}
+              disabled={false /* only disable when desired - seller logic handled in click */}
+              title={user?.role === 'farmer' ? 'Login as buyer to add to cart' : ''}
+              className={`w-full py-3 rounded-lg text-white font-semibold transition focus:outline-none ${user?.role === 'farmer' ? 'bg-gray-300 text-gray-700' : inCart ? 'bg-green-600' : 'bg-linear-to-r from-blue-500 to-blue-400 hover:from-blue-600 hover:to-blue-500 shadow-md'}`}
             >
               {inCart ? 'View Cart' : 'Add to Cart'}
             </button>

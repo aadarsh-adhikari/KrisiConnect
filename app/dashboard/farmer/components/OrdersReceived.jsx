@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { useAuthStore } from "../../../store/authStore";
+import { formatCurrency } from '@/lib/format';
 
 export default function OrdersReceived({ sellerOrders = [], products = [], setSellerOrders }) {
   const [updatingOrderId, setUpdatingOrderId] = useState(null);
@@ -58,7 +59,7 @@ export default function OrdersReceived({ sellerOrders = [], products = [], setSe
                 </div>
 
                 <div className="flex items-center gap-4">
-                  <div className="text-sm text-gray-700">₹{o.totalPrice}</div>
+                  <div className="text-sm text-gray-700">{formatCurrency(o.totalPrice)}</div>
 
                   <div className="flex items-center gap-2">
                     <span className={`px-3 py-1 rounded-full text-xs font-semibold ${o.status === 'delivered' ? 'bg-green-100 text-green-800' : o.status === 'shipped' ? 'bg-blue-100 text-blue-800' : o.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-600'}`}>
