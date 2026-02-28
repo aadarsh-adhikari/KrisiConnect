@@ -5,6 +5,7 @@ import { formatCurrency } from '@/lib/format';
 
 export default function OrdersReceived({ sellerOrders = [], products = [], setSellerOrders }) {
   const [updatingOrderId, setUpdatingOrderId] = useState(null);
+  const [hoveredBuyerId, setHoveredBuyerId] = useState(null);
 
   const user = useAuthStore((s) => s.user);
 
@@ -24,13 +25,11 @@ export default function OrdersReceived({ sellerOrders = [], products = [], setSe
         throw new Error(err.message || 'Failed to update order');
       }
       const updated = await res.json();
-      // update parent state if setter provided
       if (typeof setSellerOrders === 'function') {
         setSellerOrders((prev) => (prev || []).map((o) => (o._id === updated._id ? updated : o)));
       }
     } catch (e) {
       console.error(e);
-      // swallow — parent can re-fetch if needed
     } finally {
       setUpdatingOrderId(null);
     }
@@ -51,11 +50,30 @@ export default function OrdersReceived({ sellerOrders = [], products = [], setSe
         <div className="space-y-3">
           {sellerOrders.slice(0, 6).map((o) => {
             const product = products.find((p) => p._id === (o.productId?.toString?.() || o.productId));
+            const buyer = o.buyerId && typeof o.buyerId === 'object' ? o.buyerId : null;
             return (
               <div key={o._id} className="flex items-center justify-between border rounded p-3">
                 <div>
                   <div className="font-medium">{product ? product.name : `Product: ${o.productId}`}</div>
                   <div className="text-xs text-gray-500">Qty: {o.quantity} • {new Date(o.orderDate || o.createdAt).toLocaleDateString()}</div>
+                  {buyer && (
+                    <div className="relative inline-block mt-1">
+                      <button
+                        className="text-xs text-blue-600 underline cursor-pointer"
+                        onMouseEnter={() => setHoveredBuyerId(o._id)}
+                        onMouseLeave={() => setHoveredBuyerId(null)}
+                      >
+                        👤 {buyer.name || 'Buyer'}
+                      </button>
+                      {hoveredBuyerId === o._id && (
+                        <div className="absolute left-0 top-full mt-1 z-50 bg-white border rounded shadow-lg p-2 text-xs text-gray-800 w-52 pointer-events-none">
+                          <div><strong>Name:</strong> {buyer.name || 'N/A'}</div>
+                          {buyer.email && <div className="mt-0.5"><strong>Email:</strong> {buyer.email}</div>}
+                          {buyer.contact && <div className="mt-0.5"><strong>Contact:</strong> {buyer.contact}</div>}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex items-center gap-4">
@@ -87,7 +105,6 @@ export default function OrdersReceived({ sellerOrders = [], products = [], setSe
                         {updatingOrderId === o._id ? '...' : 'Cancel'}
                       </button>
                     )}
-
                   </div>
                 </div>
               </div>

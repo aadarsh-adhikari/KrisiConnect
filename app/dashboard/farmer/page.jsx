@@ -99,7 +99,8 @@ const FarmerDashboard = () => {
     const rows = ["orderId,product,qty,status,total,buyer,orderDate"];
     for (const o of sellerOrders) {
       const product = products.find((p) => p._id === (o.productId?.toString?.() || o.productId));
-      rows.push([`"${o._id}"`, `"${(product?.name || o.productId || '').toString().replace(/"/g, '""') }"`, o.quantity || 0, o.status || '', o.totalPrice ?? '', `"${o.buyerId}"`, `"${new Date(o.orderDate || o.createdAt).toLocaleString()}"`].join(','));
+      const buyerName = o.buyerId?.name || o.buyerId;
+      rows.push([`"${o._id}"`, `"${(product?.name || o.productId || '').toString().replace(/"/g, '') }"`, o.quantity || 0, o.status || '', o.totalPrice ?? '', `"${buyerName}"`, `"${new Date(o.orderDate || o.createdAt).toLocaleString()}"`].join(','));
     }
     const blob = new Blob([rows.join('\n')], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
@@ -168,7 +169,7 @@ const FarmerDashboard = () => {
   const fetchSellerOrders = async () => {
     try {
       setOrderUpdateError('');
-      const res = await fetch(`/api/orders?sellerId=${user?._id}`);
+      const res = await fetch(`/api/orders?sellerId=${user?._id}&populateBuyer=1`);
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
         throw new Error(err.message || 'Failed to fetch seller orders');

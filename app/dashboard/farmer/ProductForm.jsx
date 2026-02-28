@@ -115,8 +115,8 @@ const ProductForm = ({ onSave, initial, loading, onCancel }) => {
     if (!form.name.trim()) return "Name is required";
     if (!form.description.trim()) return "Description is required";
     if (!form.category) return "Category is required";
-    if (form.price === "" || Number(form.price) < 0)
-      return "Price must be non-negative";
+    if (form.price === "" || Number(form.price) <= 0)
+      return "Price must be greater than 0";
     if (form.quantity === "" || Number(form.quantity) < 0)
       return "Quantity must be non-negative";
     if (!form.location.trim()) return "Location is required";
@@ -217,13 +217,15 @@ const ProductForm = ({ onSave, initial, loading, onCancel }) => {
                 <label className="text-sm font-semibold text-gray-700">Price (NPR) <span className="text-red-500">*</span></label>
                 <input
                   name="price"
-                  type="number"
+                  type="text"
+                  inputMode="decimal"
                   value={form.price}
-                  onChange={handleChange}
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');
+                    setForm((prev) => ({ ...prev, price: val }));
+                  }}
                   required
-                  placeholder="0"
-                  min="0"
-                  step="0.01"
+                  placeholder="e.g. 100"
                   className="w-full mt-2 px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-200"
                 />
               </div>
@@ -232,13 +234,15 @@ const ProductForm = ({ onSave, initial, loading, onCancel }) => {
                 <label className="text-sm font-semibold text-gray-700">Quantity <span className="text-red-500">*</span></label>
                 <input
                   name="quantity"
-                  type="number"
+                  type="text"
+                  inputMode="numeric"
                   value={form.quantity}
-                  onChange={handleChange}
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/[^0-9]/g, '');
+                    setForm((prev) => ({ ...prev, quantity: val }));
+                  }}
                   required
                   placeholder="e.g., 10"
-                  min="0"
-                  step="1"
                   className="w-full mt-2 px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-200"
                 />
               </div>

@@ -15,7 +15,13 @@ export async function GET(request) {
       // return orders for products that belong to this seller
       const products = await Product.find({ sellerId }).select('_id').lean();
       const productIds = products.map((p) => p._id);
-      const orders = await Order.find({ productId: { $in: productIds } }).sort({ orderDate: -1 }).lean();
+      let query = Order.find({ productId: { $in: productIds } }).sort({ orderDate: -1 });
+      // optionally populate buyer information so frontend can show it
+      const populate = url.searchParams.get('populateBuyer');
+      if (populate) {
+        query = query.populate('buyerId', 'name email contact');
+      }
+      const orders = await query.lean();
       return NextResponse.json(orders, { status: 200 });
     }
 

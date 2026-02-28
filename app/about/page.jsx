@@ -1,13 +1,13 @@
 import Link from "next/link";
 import ContactSection from "../components/ContactSection";
 import { FaLeaf, FaSeedling, FaUsers, FaTruck } from 'react-icons/fa';
-
+import Image from "next/image";
 export default function About() {
   return (
     <main className="min-h-screen bg-gray-50 text-gray-800">
       {/* HERO */}
       <section className="relative bg-[url('/logo/field-hero.jpg')] bg-cover bg-center h-[56vh] flex items-center">
-        <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-white/60"></div>
+        <div className="absolute inset-0 bg-linear-to-b from-green-400 via-transparent to-white/60"></div>
         <div className="max-w-6xl mx-auto px-6 md:px-12 relative z-10 w-full">
           <div className="max-w-3xl text-center mx-auto py-12">
             <div className="inline-block px-3 py-1 rounded-full bg-black/60 text-xs text-white mb-4">Connecting food from soil to market</div>
@@ -29,7 +29,7 @@ export default function About() {
             <p className="mt-4 text-gray-600 font-medium">We believe that honest pricing and local access should reward the work of cultivation fairly and sustainably.</p>
           </div>
           <div className="md:w-1/3 bg-green-50 rounded-lg p-6 shadow-inner text-center">
-            <img src="/logo/seedling.jpg" alt="Seedling" className="w-36 h-36 object-cover mx-auto rounded-lg" />
+            <Image src="/logo/logo.png" alt="Seedling" width={144} height={144} className="object-cover mx-auto rounded-lg" />
             <div className="mt-4 text-sm text-gray-500">Trusted by 10,000+ Farmers</div>
           </div>
         </section>

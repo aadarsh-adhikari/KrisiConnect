@@ -53,6 +53,19 @@ const SignupModal = ({ isOpen, onClose, onSwitchToLogin }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      setMessage("Please enter a valid email address (e.g. user@example.com)");
+      return;
+    }
+    if (!/^\d{10}$/.test(formData.contact)) {
+      setMessage("Contact number must be exactly 10 digits");
+      return;
+    }
+    if (formData.password.length < 6) {
+      setMessage("Password must be at least 6 characters long");
+      return;
+    }
     if (formData.password !== formData.confirmPassword) {
       setMessage("Passwords do not match");
       return;
@@ -107,7 +120,7 @@ const SignupModal = ({ isOpen, onClose, onSwitchToLogin }) => {
           <div>
             <label htmlFor="email" className="block text-sm font-semibold text-green-700 mb-1">Email</label>
             <input
-              type="email"
+              type="text"
               name="email"
               id="email"
               value={formData.email}
@@ -120,14 +133,19 @@ const SignupModal = ({ isOpen, onClose, onSwitchToLogin }) => {
           <div>
             <label htmlFor="contact" className="block text-sm font-semibold text-green-700 mb-1">Contact number</label>
             <input
-              type="tel"
+              type="text"
+              inputMode="numeric"
               name="contact"
               id="contact"
               value={formData.contact}
-              onChange={handleChange}
+              onChange={(e) => {
+                const val = e.target.value.replace(/\D/g, "").slice(0, 10);
+                setFormData({ ...formData, contact: val });
+              }}
               required
+              maxLength={10}
               className="w-full px-4 py-2 border border-green-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 bg-green-50 text-gray-900"
-              placeholder="Enter contact number"
+              placeholder="Enter 10-digit contact number"
             />
           </div>
           <div>
@@ -209,14 +227,14 @@ const SignupModal = ({ isOpen, onClose, onSwitchToLogin }) => {
               "Sign Up"
             )}
           </button>
+          {message && (
+            <div className={`mt-2 text-center text-base font-semibold ${
+              message.includes("successful") ? "text-green-700" : "text-red-600"
+            }`}>
+              {message}
+            </div>
+          )}
         </form>
-        {message && (
-          <div className={`mt-2 text-center text-base font-semibold animate-fade-in ${
-            message.includes("successful") ? "text-green-700" : "text-red-600"
-          }`}>
-            {message}
-          </div>
-        )}
         <div className="mt-2 text-center text-sm text-gray-500">
           Already have an account?{' '}
           <button onClick={onSwitchToLogin} className="text-green-700 font-semibold hover:underline">Login</button>
