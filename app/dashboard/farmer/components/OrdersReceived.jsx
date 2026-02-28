@@ -2,10 +2,12 @@
 import React, { useState } from "react";
 import { useAuthStore } from "../../../store/authStore";
 import { formatCurrency } from '@/lib/format';
-
+import { FaUser } from "react-icons/fa";
 export default function OrdersReceived({ sellerOrders = [], products = [], setSellerOrders }) {
   const [updatingOrderId, setUpdatingOrderId] = useState(null);
   const [hoveredBuyerId, setHoveredBuyerId] = useState(null);
+  const [page, setPage] = useState(0);
+  const perPage = 5;
 
   const user = useAuthStore((s) => s.user);
 
@@ -47,8 +49,9 @@ export default function OrdersReceived({ sellerOrders = [], products = [], setSe
           <div className="text-xs text-gray-400">Your products are listed and ready for buyers.</div>
         </div>
       ) : (
-        <div className="space-y-3">
-          {sellerOrders.slice(0, 6).map((o) => {
+        <>
+          <div className="space-y-3">
+            {sellerOrders.slice(page * perPage, page * perPage + perPage).map((o) => {
             const product = products.find((p) => p._id === (o.productId?.toString?.() || o.productId));
             const buyer = o.buyerId && typeof o.buyerId === 'object' ? o.buyerId : null;
             return (
@@ -63,11 +66,14 @@ export default function OrdersReceived({ sellerOrders = [], products = [], setSe
                   {buyer && (
                     <div className="relative inline-block mt-1">
                       <button
-                        className="text-xs text-blue-600 underline cursor-pointer"
+                        className="text-xs text-blue-600 cursor-pointer"
                         onMouseEnter={() => setHoveredBuyerId(o._id)}
                         onMouseLeave={() => setHoveredBuyerId(null)}
                       >
-                        👤 {buyer.name || 'Buyer'}
+                      
+                      <div className="flex items-center">
+                        <FaUser className="mr-1" /> {buyer.name || 'Buyer'}
+                      </div>
                       </button>
                       {hoveredBuyerId === o._id && (
                         <div className="absolute left-0 top-full mt-1 z-50 bg-white border rounded shadow-lg p-2 text-xs text-gray-800 w-52 pointer-events-none">
@@ -115,6 +121,24 @@ export default function OrdersReceived({ sellerOrders = [], products = [], setSe
             );
           })}
         </div>
+
+          {/* pagination controls */}
+          {sellerOrders.length > perPage && (
+            <div className="mt-4 flex justify-center items-center gap-2 text-sm">
+              <button
+                onClick={() => setPage((p) => Math.max(p - 1, 0))}
+                disabled={page === 0}
+                className="px-2 py-1 border rounded disabled:opacity-50"
+              >Previous</button>
+              <span>Page {page + 1} of {Math.ceil(sellerOrders.length / perPage)}</span>
+              <button
+                onClick={() => setPage((p) => Math.min(p + 1, Math.ceil(sellerOrders.length / perPage) - 1))}
+                disabled={page >= Math.ceil(sellerOrders.length / perPage) - 1}
+                className="px-2 py-1 border rounded disabled:opacity-50"
+              >Next</button>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

@@ -86,6 +86,8 @@ const FarmerDashboard = () => {
 
 
   const exportProductsCSV = () => {
+    if (!products || products.length === 0) return;
+    if (!window.confirm('Export products as CSV?')) return;
     const rows = ["id,name,price,quantity,location,category"];
     for (const p of products) {
       rows.push([`"${p._id}"`, `"${(p.name||'').replace(/"/g,'""') }"`, p.price ?? 0, p.quantity ?? 0, `"${(p.location||'').replace(/"/g,'""') }"`, `"${(p.category||'').replace(/"/g,'""') }"`].join(','));
@@ -96,6 +98,8 @@ const FarmerDashboard = () => {
   };
 
   const exportSellerOrdersCSV = () => {
+    if (!sellerOrders || sellerOrders.length === 0) return;
+    if (!window.confirm('Export orders as CSV?')) return;
     const rows = ["orderId,product,qty,status,total,buyer,orderDate"];
     for (const o of sellerOrders) {
       const product = products.find((p) => p._id === (o.productId?.toString?.() || o.productId));
@@ -235,6 +239,20 @@ const FarmerDashboard = () => {
           </div>
           <div className="flex items-center gap-3">
             <button onClick={() => { setShowForm(true); setEditProduct(null); }} className="px-4 py-2 bg-green-600 text-white rounded shadow-sm text-sm">+ Add Product</button>
+            <button
+              onClick={exportProductsCSV}
+              disabled={!products || products.length === 0}
+              className={`px-4 py-2 bg-blue-600 text-white rounded shadow-sm text-sm ${!products || products.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              Export Products
+            </button>
+            <button
+              onClick={exportSellerOrdersCSV}
+              disabled={!sellerOrders || sellerOrders.length === 0}
+              className={`px-4 py-2 bg-blue-600 text-white rounded shadow-sm text-sm ${!sellerOrders || sellerOrders.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              Export Orders
+            </button>
             <button onClick={handleDeleteAccount} disabled={deleteLoading} className="px-4 py-2 bg-red-500 text-white rounded shadow-sm text-sm">{deleteLoading ? 'Deleting...' : 'Delete Account'}</button>
           </div>
         </div>

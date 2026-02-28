@@ -128,6 +128,7 @@ export default function ProductsTable({ products = [], onEdit, onDelete, onAdd, 
                         <div className="w-12 h-12 bg-gray-100 rounded overflow-hidden flex items-center justify-center">
                           {p.images && p.images[0] ? (
                             // use next/image where possible, but fallback to img for unknown remote sources
+                            // eslint-disable-next-line @next/next/no-img-element
                             <img src={p.images[0]} alt={p.name} className="w-full h-full object-cover" />
                           ) : (
                             <div className="text-xs text-gray-400">No image</div>
@@ -178,7 +179,7 @@ export default function ProductsTable({ products = [], onEdit, onDelete, onAdd, 
                       <div className="flex items-center gap-2">
                         <button onClick={() => onEdit?.(p)} className="px-3 py-1 bg-yellow-400 text-white rounded text-xs">Edit</button>
                         <button onClick={() => onDelete?.(p._id)} className="px-3 py-1 bg-red-500 text-white rounded text-xs">Delete</button>
-                        <button className="p-2 text-gray-400 hover:text-gray-600"><FaEllipsisV /></button>
+                        {/* <button className="p-2 text-gray-400 hover:text-gray-600"><FaEllipsisV /></button> */}
                       </div>
                     </td>
                   </tr>
