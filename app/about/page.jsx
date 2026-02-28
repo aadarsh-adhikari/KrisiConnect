@@ -12,9 +12,9 @@ export default function About() {
           <div className="max-w-3xl text-center mx-auto py-12">
             <div className="inline-block px-3 py-1 rounded-full bg-black/60 text-xs text-white mb-4">Connecting food from soil to market</div>
             <h1 className="text-4xl md:text-6xl font-extrabold text-white drop-shadow-lg leading-tight">Bridging the Gap Between Soil and Market</h1>
-            <p className="mt-6 text-white/90 text-lg md:text-xl">Empowering the hands that feed us by connecting farmers directly with buyers — fresher produce, fairer prices.</p>
+            <p className="mt-6 text-white/90 text-lg md:text-xl">Empowering the hands that feed us by connecting farmers directly with buyers fresher produce, fairer prices.</p>
             <div className="mt-8 flex justify-center gap-4">
-              <Link href="/marketplace" className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-full font-semibold shadow">Read Our Story</Link>
+              <Link href="/marketplace" className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-full font-semibold shadow">Visit Marketplace</Link>
             </div>
           </div>
         </div>
@@ -25,8 +25,8 @@ export default function About() {
         <section className="bg-white rounded-xl shadow p-8 md:p-12 mb-8 flex flex-col md:flex-row items-center gap-8">
           <div className="md:w-2/3">
             <h2 className="text-2xl md:text-3xl font-bold text-gray-800">Rooted in Fairness</h2>
-            <p className="mt-4 text-gray-600">Krisi Connect began with a simple observation: while technology was advancing everywhere else, the agricultural supply chain remained fragmented. Farmers were losing value to middlemen, and buyers were paying premiums without quality assurance. We built this platform to be the digital bridge — bringing transparency, trust, and fair value to producers and buyers alike.</p>
-            <p className="mt-4 text-gray-600 font-medium">We believe that honest pricing and local access should reward the work of cultivation — fairly and sustainably.</p>
+            <p className="mt-4 text-gray-600">Krisi Connect began with a simple observation: while technology was advancing everywhere else, the agricultural supply chain remained fragmented. Farmers were losing value to middlemen, and buyers were paying premiums without quality assurance. We built this platform to be the digital bridge bringing transparency, trust, and fair value to producers and buyers alike.</p>
+            <p className="mt-4 text-gray-600 font-medium">We believe that honest pricing and local access should reward the work of cultivation fairly and sustainably.</p>
           </div>
           <div className="md:w-1/3 bg-green-50 rounded-lg p-6 shadow-inner text-center">
             <img src="/logo/seedling.jpg" alt="Seedling" className="w-36 h-36 object-cover mx-auto rounded-lg" />
@@ -42,7 +42,7 @@ export default function About() {
             </div>
             <div>
               <h3 className="text-lg font-semibold">Our Mission</h3>
-              <p className="text-sm text-gray-600 mt-2">To eliminate middlemen and democratize market access — ensuring fair prices and transparent transactions for every harvest.</p>
+              <p className="text-sm text-gray-600 mt-2">To eliminate middlemen and democratize market access ensuring fair prices and transparent transactions for every harvest.</p>
             </div>
           </div>
 
@@ -84,8 +84,8 @@ export default function About() {
               <div>
                 <h4 className="font-semibold">For Buyers</h4>
                 <ul className="mt-2 text-sm text-gray-600 space-y-2">
-                  <li>Farm-fresh quality with clear provenance</li>
-                  <li>End-to-end traceability for produce</li>
+                  <li>Farm fresh quality with clear provenance</li>
+                  <li>End to end traceability for produce</li>
                   <li>Transparent bulk pricing for orders</li>
                 </ul>
               </div>
@@ -107,7 +107,7 @@ export default function About() {
              
               <details className="bg-white p-4 rounded-lg shadow">
                 <summary className="font-semibold">How are payments handled?</summary>
-                <p className="mt-2 text-sm text-gray-600">Payments are arranged directly between buyers and sellers via the chat feature. We don’t collect any commission – the platform simply facilitates connection and communication.</p>
+                <p className="mt-2 text-sm text-gray-600">Payments are arranged directly between buyers and sellers via the chat feature. We don’t collect any commission the platform simply facilitates connection and communication.</p>
               </details>
 
               <details className="bg-white p-4 rounded-lg shadow">

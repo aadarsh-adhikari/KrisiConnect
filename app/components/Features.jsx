@@ -3,7 +3,7 @@ import { FaTruck, FaSeedling, FaShieldAlt, FaLeaf, FaRegLightbulb,FaArrowRight  
 
 export default function Features(){
   const items = [
-    { icon: <FaSeedling className="text-green-600" />, title: "Farm-fresh", desc: "Seasonal produce directly from local farms — harvested and delivered quickly." },
+    { icon: <FaSeedling className="text-green-600" />, title: "Farm-fresh", desc: "Seasonal produce directly from local farms harvested and delivered quickly." },
     { icon: <FaTruck className="text-green-600" />, title: "Local Delivery", desc: "Fast and reliable delivery options from nearby sellers." },
     { icon: <FaShieldAlt className="text-green-600" />, title: "Trusted Sellers", desc: "Verified farmer profiles with transparent ratings and reviews." },
     { icon: <FaLeaf className="text-green-600" />, title: "Sustainable", desc: "Support regenerative practices and reduce food miles." },

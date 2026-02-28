@@ -34,7 +34,7 @@ export default function Hero() {
       <div className="container mx-auto px-6 md:px-12 max-w-6xl flex flex-col md:flex-row items-center gap-8">
         <div className="md:w-1/2">
           <h1 className="text-4xl md:text-5xl font-extrabold mb-4 leading-tight">Fresh produce. Direct from farmers to your table.</h1>
-          <p className="text-green-100 mb-6 max-w-lg">Discover fresh, seasonal, and locally-grown farm products. Buy directly from nearby farmers and support sustainable agriculture.</p>
+          <p className="text-green-100 mb-6 max-w-lg">Discover fresh, seasonal, and locally grown farm products. Buy directly from nearby farmers and support sustainable agriculture.</p>
           <div className="flex gap-4">
             <Link href="/marketplace" className="inline-flex items-center gap-2 bg-white text-green-700 px-5 py-3 rounded-lg font-semibold shadow hover:shadow-lg">
               <FaStore /> Marketplace
