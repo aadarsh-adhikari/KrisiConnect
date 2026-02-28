@@ -52,7 +52,11 @@ export default function OrdersReceived({ sellerOrders = [], products = [], setSe
             const product = products.find((p) => p._id === (o.productId?.toString?.() || o.productId));
             const buyer = o.buyerId && typeof o.buyerId === 'object' ? o.buyerId : null;
             return (
-              <div key={o._id} className="flex items-center justify-between border rounded p-3">
+              <div key={o._id} className="relative flex items-center justify-between border rounded p-3 group">
+                {/* order ID tooltip on hover */}
+                <div className="absolute top-0 right-0 mt-1 mr-1 z-10 text-xs bg-black text-white px-2 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity">
+                  ID: {o._id}
+                </div>
                 <div>
                   <div className="font-medium">{product ? product.name : `Product: ${o.productId}`}</div>
                   <div className="text-xs text-gray-500">Qty: {o.quantity} • {new Date(o.orderDate || o.createdAt).toLocaleDateString()}</div>
