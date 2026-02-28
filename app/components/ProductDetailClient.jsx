@@ -4,6 +4,7 @@ import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "../store/authStore";
 import { useCartStore } from "../store/cartStore";
+import { formatCurrency } from "@/lib/format";
 import ProductCard from "./ProductCard";
 
 const formatDate = (iso) => {
