@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
+import Image from "next/image";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "../store/authStore";
@@ -90,15 +91,17 @@ const ProductDetailClient = ({ product }) => {
             {/* Main image */}
             <div className="h-80 md:h-[420px] flex items-center justify-center bg-gray-50">
               {images.length > 0 ? (
-                <img
-                  src={images[index]}
-                  alt={`${product.name} ${index + 1}`}
-                  className="max-h-full max-w-full object-contain transition-all duration-300"
-                  ref={mainRef}
-                />
-              ) : (
-                <div className="text-gray-400">No images</div>
-              )}
+                  <Image
+                    src={images[index]}
+                    alt={`${product.name} ${index + 1}`}
+                    className="max-h-[50vh] max-w-full object-contain transition-all duration-300"
+                    ref={mainRef}
+                    fill
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                  />
+                ) : (
+                  <div className="text-gray-400">No images</div>
+                )}
 
               {/* Prev/Next */}
               {images.length > 1 && (
@@ -119,7 +122,7 @@ const ProductDetailClient = ({ product }) => {
                 <div className="flex gap-3 overflow-x-auto scrollbar-hide">
                   {images.map((img, i) => (
                     <button key={i} onClick={() => setIndex(i)} className={`rounded overflow-hidden border ${i === index ? 'ring-2 ring-green-500' : 'border-gray-100'}`}>
-                      <img src={img} className="w-24 h-16 object-cover" />
+                      <Image src={img} alt={`Thumbnail ${i + 1}`} className="w-24 h-16 object-cover" width={96} height={64} />
                     </button>
                   ))}
                 </div>
@@ -133,7 +136,6 @@ const ProductDetailClient = ({ product }) => {
           <p className="text-sm text-gray-500 mt-1">{product.category} • {product.location}</p>
           <div className="mt-4">
             <span className="text-3xl font-bold text-green-600">{formatCurrency(product.price)}</span>
-            <span className="text-sm text-gray-500 ml-2">/{product.unit}</span>
           </div>
 
           <div className="mt-4 text-gray-700">
@@ -152,7 +154,7 @@ const ProductDetailClient = ({ product }) => {
               }}
               disabled={false /* only disable when desired - seller logic handled in click */}
               title={user?.role === 'farmer' ? 'Login as buyer to add to cart' : ''}
-              className={`w-full py-3 rounded-lg text-white font-semibold transition focus:outline-none ${user?.role === 'farmer' ? 'bg-gray-300 text-gray-700' : inCart ? 'bg-green-600' : 'bg-linear-to-r from-blue-500 to-blue-400 hover:from-blue-600 hover:to-blue-500 shadow-md'}`}
+              className={`w-full py-3 rounded-lg text-white font-semibold transition focus:outline-none cursor-pointer ${user?.role === 'farmer' ? 'bg-gray-300 text-gray-700' : inCart ? 'bg-green-600' : 'bg-linear-to-r from-blue-500 to-blue-400 hover:from-blue-600 hover:to-blue-500 shadow-md'}`}
             >
               {inCart ? 'View Cart' : 'Add to Cart'}
             </button>
@@ -234,19 +236,43 @@ const ContactSellerButton = ({ product }) => {
   
    if(seller.contact && seller.email){
     return(<div className="flex flex-row gap-2"> 
-     <button onClick={handleEmail} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">Contact via Email</button>
-      <button onClick={handleWhatsApp} className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">Message on WhatsApp</button>
+     <button
+       onClick={handleEmail}
+       title={seller.email}
+       className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded cursor-pointer"
+     >
+       Contact via Email
+     </button>
+      <button
+        onClick={handleWhatsApp}
+        title={seller.contact}
+        className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded cursor-pointer"
+      >
+        Message on WhatsApp
+      </button>
     </div>)
    }
   if (seller.contact) {
     return (
-      <button onClick={handleWhatsApp} className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">Message on WhatsApp</button>
+      <button
+        onClick={handleWhatsApp}
+        title={seller.contact}
+        className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded cursor-pointer"
+      >
+        Message on WhatsApp
+      </button>
     );
   }
 
   if (seller.email) {
     return (
-      <button onClick={handleEmail} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">Contact via Email</button>
+      <button
+        onClick={handleEmail}
+        title={seller.email}
+        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded cursor-pointer"
+      >
+        Contact via Email
+      </button>
     );
   }
 
